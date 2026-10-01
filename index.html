@@ -1,0 +1,564 @@
+<!doctype html>
+<html lang="pt-BR" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>QBrindes & Presentes · Brindes personalizados a laser</title>
+<meta name="description" content="Copos, canetas, chaveiros, kits e facas artesanais com nome, logo ou foto gravados a laser. Veja em 3D, personalize e peça pelo WhatsApp.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#0B0733">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:title" content="QBrindes & Presentes · Presentes que levam o seu nome">
+<meta property="og:description" content="Brindes personalizados a laser, com foto e logo. Veja cada produto em 3D e peça pelo WhatsApp.">
+<meta property="og:image" content="assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/playfair-display-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<script>
+  /* Decide antes da primeira pintura: movimento, fixação do hero e tema. */
+  (function () {
+    var h = document.documentElement, salvo = null, tema = null;
+    try { salvo = localStorage.getItem('qb-movimento'); tema = localStorage.getItem('qb-tema'); } catch (e) {}
+    var reduz = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var mov = salvo ? salvo === 'on' : !reduz;
+    h.classList.remove('no-js');
+    h.classList.add('js', mov ? 'motion-on' : 'motion-paused');
+    if (window.innerHeight > 520) h.classList.add('pin-on');
+    if (!tema) tema = window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    h.setAttribute('data-theme', tema);
+  })();
+</script>
+<link rel="stylesheet" href="css/styles.css?v=1">
+<link rel="stylesheet" href="css/motion.css?v=1">
+<script type="importmap">{ "imports": { "three": "./js/vendor/three.qb.min.js?v=1" } }</script>
+</head>
+<body>
+<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="qg-logo" x1="0" y1="0" x2="1" y2=".25"><stop offset="0" stop-color="#0A0A2E"/><stop offset=".55" stop-color="#1408B8"/><stop offset="1" stop-color="#2A1BFF"/></linearGradient><linearGradient id="qg-logo-claro" x1="0" y1="0" x2="1" y2=".25"><stop offset="0" stop-color="#C9C3FF"/><stop offset=".6" stop-color="#8F86FF"/><stop offset="1" stop-color="#FFC857"/></linearGradient></defs>
+  <symbol id="logo" viewBox="-2 -4 362 152"><path class="logo-q" d="M116.2 112.6 119.1 113.3Q118.3 123 115.7 130.2Q113 137.3 108.1 140.9Q104.8 143.5 99.8 144.8Q94.6 146.2 89.4 146.2Q81 146.2 72.8 143.7Q64.6 141.2 56.5 137.6Q48.3 133.9 39.6 130.3Q38.7 130 37.6 129.6Q36.6 129.2 36 129.2Q33.1 130.9 29.8 131.9Q26.5 133 23.4 133Q20.4 133 18.4 131.9Q16.3 130.9 16.3 128.5Q16.3 123.8 24.5 123.8Q29.8 123.8 36 126.5Q41.7 125 45.8 123.2Q49.9 121.3 54.3 119.7Q58.6 118 64.8 117.5L65 120Q60.1 120.4 56.6 121.7Q53.1 123 49.6 124.5Q46.1 126 41.2 127.3Q54.1 127.6 63.5 127.8Q72.9 128.1 80.3 127.6Q87.8 127.2 94.5 125.8Q102.8 124 107.6 121.2Q112.5 118.3 116.2 112.6ZM62.1 9.7Q79 9.7 91.8 16.2Q104.5 22.6 111.6 34.7Q118.6 46.8 118.6 64Q118.6 80.8 111.4 93.4Q104.2 106 91.4 113Q78.5 120.1 61.9 120.1Q45 120.1 32.3 113.7Q19.5 107.2 12.4 95.1Q5.4 82.9 5.4 65.8Q5.4 49 12.7 36.4Q20 23.8 32.8 16.8Q45.5 9.7 62.1 9.7ZM61.4 12.4Q54 12.4 48.5 19.2Q42.9 25.9 39.9 37.8Q36.9 49.6 36.9 65.2Q36.9 81.1 40.3 92.9Q43.7 104.7 49.6 111Q55.4 117.4 62.5 117.4Q70 117.4 75.6 110.7Q81.1 103.9 84.1 92Q87.1 80.1 87.1 64.6Q87.1 48.5 83.7 36.9Q80.2 25.2 74.4 18.8Q68.5 12.4 61.4 12.4Z"/><path class="logo-b" d="M120.5 71.3Q122.1 71.3 124.7 71.4Q127.3 71.5 129.8 71.5Q133 71.5 135.9 71.4Q138.8 71.3 140.1 71.3Q147.8 71.3 151.7 74.2Q155.6 77.1 155.6 81.7Q155.6 84 154.3 86.3Q153.1 88.6 150.4 90.5Q147.8 92.3 143.4 93.3V93.4Q149.3 93.9 152.7 95.7Q156.1 97.5 157.5 100Q159 102.5 159 105.2Q159 109.2 156.9 112.1Q154.8 114.9 150.9 116.5Q147 118 141.6 118Q140.1 118 137.1 117.9Q134.1 117.8 130 117.8Q127.3 117.8 124.7 117.8Q122.1 117.9 120.5 118V116.7Q122.6 116.5 123.7 116.2Q124.8 115.8 125.2 114.6Q125.5 113.4 125.5 111V78.3Q125.5 75.8 125.2 74.7Q124.8 73.5 123.7 73.1Q122.6 72.7 120.5 72.6ZM138.9 72.6Q136.2 72.6 135.4 73.7Q134.6 74.8 134.6 78.3V111Q134.6 113.3 135 114.5Q135.3 115.7 136.3 116.1Q137.3 116.5 139.3 116.5Q144.6 116.5 147.1 113.5Q149.5 110.5 149.5 104.9Q149.5 99.8 146.9 97.1Q144.3 94.3 138.3 94.3H132.3Q132.3 94.3 132.3 93.7Q132.3 93.2 132.3 93.2H137.9Q141.3 93.2 143.1 91.7Q145 90.2 145.6 87.7Q146.3 85.3 146.3 82.4Q146.3 77.5 144.6 75.1Q142.9 72.6 138.9 72.6ZM185.4 83Q187.5 83 188.8 83.8Q190.1 84.7 190.8 86Q191.5 87.3 191.5 88.8Q191.5 91 190.2 92.4Q188.9 93.9 186.8 93.9Q184.8 93.9 183.6 92.8Q182.3 91.7 182.3 89.9Q182.3 88.2 183.1 87.1Q183.9 86 185 85.3Q184.3 84.9 183.3 85.1Q181.8 85.2 180.5 86.2Q179.2 87.2 178.2 88.6Q177.3 90.1 176.8 91.7Q176.3 93.4 176.3 94.9V111.2Q176.3 114.4 177.9 115.5Q179.6 116.6 182.8 116.6V118Q181.2 117.9 178.4 117.8Q175.5 117.7 172.4 117.7Q169.8 117.7 167.3 117.8Q164.8 117.9 163.5 118V116.6Q165.9 116.6 166.9 115.6Q168 114.6 168 111.9V91.1Q168 88.1 167 86.7Q166.1 85.3 163.5 85.3V83.9Q165.6 84.1 167.6 84.1Q170 84.1 172.2 83.9Q174.4 83.6 176.3 83.2V90Q177.1 88.2 178.4 86.6Q179.7 85 181.5 84Q183.3 83 185.4 83ZM202.5 67.1Q204.9 67.1 206.4 68.4Q207.9 69.7 207.9 71.9Q207.9 74 206.4 75.4Q204.9 76.7 202.5 76.7Q200.1 76.7 198.6 75.4Q197.1 74 197.1 71.9Q197.1 69.7 198.6 68.4Q200.1 67.1 202.5 67.1ZM207.1 83.2V111.9Q207.1 114.6 208.1 115.6Q209.1 116.6 211.6 116.6V118Q210.4 117.9 207.9 117.8Q205.5 117.7 203 117.7Q200.6 117.7 198.1 117.8Q195.5 117.9 194.3 118V116.6Q196.7 116.6 197.7 115.6Q198.8 114.6 198.8 111.9V91.1Q198.8 88.1 197.8 86.7Q196.9 85.3 194.3 85.3V83.9Q196.4 84.1 198.4 84.1Q200.8 84.1 203 83.9Q205.2 83.6 207.1 83.2ZM238.8 83Q241.6 83 243.3 83.7Q245 84.4 246 85.5Q247.2 86.8 247.7 88.8Q248.2 90.8 248.2 94.1V111.9Q248.2 114.6 249.2 115.6Q250.2 116.6 252.7 116.6V118Q251.5 117.9 249 117.8Q246.5 117.7 244.2 117.7Q241.8 117.7 239.5 117.8Q237.2 117.9 236 118V116.6Q238.1 116.6 239 115.6Q239.9 114.6 239.9 111.9V91.8Q239.9 90.1 239.5 88.7Q239.2 87.3 238.2 86.4Q237.3 85.6 235.4 85.6Q233.2 85.6 231.5 86.8Q229.8 88 228.9 90.1Q227.9 92.2 227.9 94.7V111.9Q227.9 114.6 228.8 115.6Q229.7 116.6 231.7 116.6V118Q230.6 117.9 228.4 117.8Q226.2 117.7 223.8 117.7Q221.4 117.7 218.9 117.8Q216.4 117.9 215.1 118V116.6Q217.5 116.6 218.6 115.6Q219.6 114.6 219.6 111.9V91.1Q219.6 88.1 218.6 86.7Q217.7 85.3 215.1 85.3V83.9Q217.2 84.1 219.2 84.1Q221.7 84.1 223.9 83.9Q226.1 83.6 227.9 83.2V89.8Q229.6 86 232.5 84.5Q235.4 83 238.8 83ZM287.4 66.3V110.8Q287.4 113.7 288.4 115.2Q289.3 116.6 291.9 116.6V118Q289.8 117.8 287.8 117.8Q285.3 117.8 283.1 118Q280.9 118.2 279.1 118.7V74.2Q279.1 71.3 278.1 69.8Q277.2 68.4 274.6 68.4V67Q276.7 67.2 278.7 67.2Q281.1 67.2 283.3 67Q285.5 66.8 287.4 66.3ZM271.6 83Q274.5 83 276.8 84.1Q279.1 85.2 280.2 87.8L279.4 88.5Q278.5 86.6 276.9 85.7Q275.3 84.8 273.4 84.8Q269.8 84.8 267.7 88.7Q265.5 92.7 265.5 101Q265.5 106.5 266.4 109.9Q267.2 113.3 268.8 114.8Q270.5 116.4 272.7 116.4Q275.1 116.4 277 114.4Q278.9 112.4 279.2 108.8L279.7 110.7Q278.8 114.7 276.5 116.8Q274.1 118.9 270.2 118.9Q266.3 118.9 263.2 117Q260.1 115 258.4 111.1Q256.7 107.1 256.7 100.9Q256.7 94.9 258.7 90.9Q260.7 86.9 264.1 85Q267.4 83 271.6 83ZM312 83Q317.8 83 321.1 86.5Q324.4 89.9 324.4 97.6H302.1L302 96.4H316.7Q316.8 93.1 316.3 90.4Q315.8 87.6 314.6 86Q313.5 84.3 311.6 84.3Q309.1 84.3 307.2 87.3Q305.4 90.2 305 96.9L305.2 97.3Q305.1 98.1 305.1 99.1Q305 100.1 305 101.1Q305 105.6 306.4 108.6Q307.7 111.6 309.8 113Q311.9 114.4 314.1 114.4Q315.7 114.4 317.3 113.9Q318.8 113.4 320.4 112.2Q321.9 110.9 323.1 108.7L324.4 109.1Q323.6 111.5 321.9 113.8Q320.2 116 317.6 117.5Q315 118.9 311.4 118.9Q306.9 118.9 303.5 116.9Q300.1 114.9 298.1 111Q296.2 107.1 296.2 101.5Q296.2 95.4 298.2 91.3Q300.3 87.2 303.8 85.1Q307.4 83 312 83ZM341.8 83Q344.5 83 346.5 83.7Q348.5 84.5 349.4 85.2Q351.6 86.8 352.1 83H353.6Q353.4 84.9 353.4 87.5Q353.3 90.2 353.3 94.5H351.9Q351.5 92.1 350.6 89.8Q349.7 87.4 347.9 85.9Q346.1 84.4 343.2 84.4Q341.2 84.4 339.8 85.5Q338.4 86.7 338.4 88.9Q338.4 90.9 339.6 92.3Q340.8 93.8 342.7 95.1Q344.6 96.4 346.7 97.9Q349 99.5 350.8 101.2Q352.7 102.8 353.8 104.7Q354.9 106.7 354.9 109.3Q354.9 112.3 353.3 114.5Q351.6 116.6 348.9 117.8Q346.1 118.9 342.8 118.9Q341 118.9 339.6 118.6Q338.1 118.3 337 117.7Q336.2 117.3 335.5 116.9Q334.7 116.5 334 116.2Q333.4 115.9 332.9 116.5Q332.4 117.1 332.1 118.5H330.7Q330.8 116.3 330.9 113.3Q330.9 110.3 330.9 105.3H332.4Q332.8 108.9 333.8 111.6Q334.8 114.4 336.6 115.9Q338.4 117.5 341.4 117.5Q342.6 117.5 343.7 117Q344.9 116.4 345.7 115.3Q346.4 114.1 346.4 112.3Q346.4 109.4 344.5 107.5Q342.5 105.6 339.5 103.4Q337.3 101.7 335.3 100.1Q333.4 98.5 332.2 96.5Q330.9 94.5 330.9 91.9Q330.9 88.9 332.5 86.9Q334 85 336.4 84Q338.9 83 341.8 83Z"/></symbol>
+  <symbol id="i-whats" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.6 2.6 0 0 0 1.7-1.2 2.1 2.1 0 0 0 .1-1.2c0-.1-.2-.2-.4-.3Z"/></symbol>
+  <symbol id="i-busca" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></g></symbol>
+  <symbol id="i-sacola" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M5 8h14l-1.2 12H6.2L5 8Z"/><path d="M9 10V7a3 3 0 0 1 6 0v3" stroke-linecap="round"/></g></symbol>
+  <symbol id="i-sol" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/></g></symbol>
+  <symbol id="i-lua" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-som" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path class="onda" d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/><path class="mudo" d="m16 9.5 5 5m0-5-5 5"/></g></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24"><g fill="currentColor"><rect x="6.5" y="5" width="3.6" height="14" rx="1"/><rect x="13.9" y="5" width="3.6" height="14" rx="1"/></g></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.9l10-6.5a1 1 0 0 0 0-1.7l-10-6.5A1 1 0 0 0 8 5.5Z"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.1"/></g></symbol>
+  <symbol id="i-seta" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-menos" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M5 12h14"/></symbol>
+  <symbol id="i-fechar" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="m6 6 12 12M18 6 6 18"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M4 7h16M4 12h16M4 17h10"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-brilho" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2c.6 4.8 2.4 7.2 7.5 8-5.1.8-6.9 3.2-7.5 8-.6-4.8-2.4-7.2-7.5-8 5.1-.8 6.9-3.2 7.5-8Z"/></symbol>
+  <symbol id="i-laser" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 2v9"/><path d="M8 5h8"/><circle cx="12" cy="15" r="2" fill="currentColor"/><path d="M5 21h14M7.5 18.5l-1.5 1.5M16.5 18.5l1.5 1.5M12 18.5v1"/></g></symbol>
+  <symbol id="i-foto" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="m4 17 5-4.5 3.5 3 3-2.5L20 17"/></g></symbol>
+  <symbol id="i-texto" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M5 6h14M12 6v13M9 19h6"/></symbol>
+  <symbol id="i-insta" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r=".6" fill="currentColor"/></g></symbol>
+  <symbol id="i-email" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></g></symbol>
+  <symbol id="i-pino" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11Z"/><circle cx="12" cy="10" r="2.3"/></g></symbol>
+  <symbol id="i-relogio" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></g></symbol>
+  <symbol id="i-presente" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="8.5" width="17" height="4" rx="1"/><path d="M5 12.5V20h14v-7.5M12 8.5V20"/><path d="M12 8.5S10.5 4 8 4.5 7.5 8.5 12 8.5Zm0 0S13.5 4 16 4.5s.5 4-4 4Z"/></g></symbol>
+  <symbol id="i-girar" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v4.5h-4.5"/></g></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4m-4.5 4.5L12 4l4.5 4.5"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15"/></g></symbol>
+  <symbol id="i-lixo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></g></symbol>
+  <symbol id="i-baixo" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></symbol>
+  <!-- Ícones das categorias e do estúdio: desenho de linha, mesma espessura -->
+  <symbol id="c-copo" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 10h20l-2.5 32h-15L14 10Z"/><path d="M13 10h22V6.5H13z"/><path d="M15.5 19h17" stroke-dasharray="2 3"/></g></symbol>
+  <symbol id="c-garrafa" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M17 15h14v27a2 2 0 0 1-2 2H19a2 2 0 0 1-2-2V15Z"/><path d="M19 15v-5h10v5M21 10V6.5h6V10"/><path d="M24 6.5c4-3 9-1 9 3"/></g></symbol>
+  <symbol id="c-caneca" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 13h22v25a3 3 0 0 1-3 3H13a3 3 0 0 1-3-3V13Z"/><path d="M32 18h4a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4h-4"/><path d="M17 8c0-2 2-2 2-4M23 8c0-2 2-2 2-4" stroke-linecap="round"/></g></symbol>
+  <symbol id="c-caneta" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m34.5 6.5 7 7L17 38l-9 2.5 2.5-9L34.5 6.5Z"/><path d="m30 11 7 7M10.5 31.5l6 6"/></g></symbol>
+  <symbol id="c-chaveiro" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="17" cy="13" r="7"/><path d="M22 18.5 24 21"/><path d="M33 44S20 35.5 20 27.5a6.5 6.5 0 0 1 13-1 6.5 6.5 0 0 1 13 1C46 35.5 33 44 33 44Z" transform="translate(-4 -2)"/></g></symbol>
+  <symbol id="c-cuia" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 16h24c0 14-3 26-12 26S12 30 12 16Z"/><path d="M11 16h26"/><path d="M28 16 34 4" stroke-linecap="round"/></g></symbol>
+  <symbol id="c-taca" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M13 6h22c1 10-2 18-11 18S12 16 13 6Z"/><path d="M24 24v14M15 42h18" stroke-linecap="round"/></g></symbol>
+  <symbol id="c-faca" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 30 32 8c6 2 6 9 1 13L14 34Z"/><path d="m14 34 4 4-8 8-6-6 8-8Z"/></g></symbol>
+  <symbol id="c-churrasco" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 22h32a16 16 0 0 1-32 0Z"/><path d="M14 38l-3 6M34 38l3 6M18 14c0-3 3-3 3-6M26 14c0-3 3-3 3-6"/></g></symbol>
+  <symbol id="c-kit" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="14" width="38" height="26" rx="3"/><path d="M18 14v-4h12v4M5 24h38"/><path d="M22 24v4h4v-4"/></g></symbol>
+  <symbol id="c-tech" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="24" cy="24" r="14"/><circle cx="24" cy="24" r="6"/><path d="M24 4v4M24 40v4M4 24h4M40 24h4" stroke-linecap="round"/></g></symbol>
+  <symbol id="c-tabua" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="10" width="32" height="28" rx="4"/><rect x="10" y="14" width="24" height="20" rx="2" stroke-dasharray="2 3"/><path d="M38 24h5" stroke-linecap="round"/></g></symbol>
+</svg>
+
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo" id="topo">
+  <div class="demo-barra" role="region" aria-label="Controles da demonstração">
+    <span class="demo-barra__selo">Demo</span>
+    <span class="demo-barra__texto">Site em demonstração para a QBrindes</span>
+    <div class="demo-barra__acoes">
+      <button class="mini" type="button" data-som-toggle aria-pressed="true"><svg><use href="#i-som"/></svg><span>Som</span></button>
+      <button class="mini" type="button" data-motion-toggle aria-pressed="false"><svg class="ico-pausa"><use href="#i-pausa"/></svg><svg class="ico-play"><use href="#i-play"/></svg><span class="txt-pausar">Pausar efeitos</span><span class="txt-ativar">Ativar efeitos</span></button>
+      <button class="mini" type="button" data-abrir="dlg-demo"><svg><use href="#i-info"/></svg><span>Sobre a demo</span></button>
+    </div>
+  </div>
+  <div class="topo__barra wrap">
+    <a class="topo__logo" href="#inicio" aria-label="QBrindes, início"><svg viewBox="-2 -4 362 152"><use href="#logo"/></svg></a>
+    <nav class="topo__nav" id="menu" aria-label="Principal">
+      <a href="#vitrine">Vitrine 3D</a>
+      <a href="#estudio">Personalizar</a>
+      <a href="#catalogo">Catálogo</a>
+      <a href="#ocasioes">Ocasiões</a>
+      <a href="#contato">Contato</a>
+      <button class="topo__tema-menu" type="button" data-theme-toggle><svg class="ico-sol"><use href="#i-sol"/></svg><svg class="ico-lua"><use href="#i-lua"/></svg><span>Trocar tema</span></button>
+    </nav>
+    <button class="topo__busca" type="button" data-abrir-busca aria-label="Buscar produtos (atalho: barra)">
+      <svg><use href="#i-busca"/></svg><span class="topo__busca-dica" data-dica-busca>Buscar produtos…</span><kbd>/</kbd>
+    </button>
+    <button class="icone topo__tema" type="button" data-theme-toggle aria-label="Trocar tema claro ou escuro"><svg class="ico-sol"><use href="#i-sol"/></svg><svg class="ico-lua"><use href="#i-lua"/></svg></button>
+    <button class="btn-pedido" type="button" data-abrir-pedido aria-label="Abrir pedido">
+      <svg><use href="#i-sacola"/></svg><span class="btn-pedido__txt">Pedido</span><span class="btn-pedido__n" aria-hidden="true" data-contador>0</span><span class="sr" data-contador-sr>0 itens</span>
+    </button>
+    <button class="icone topo__menu" type="button" aria-controls="menu" aria-expanded="false" aria-label="Abrir menu"><svg><use href="#i-menu"/></svg></button>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<!-- ===================== HERO ===================== -->
+<section class="hero sec-dark" id="inicio" aria-labelledby="hero-titulo" data-step="0">
+  <div class="hero__pin">
+    <div class="hero__palco palco3d" id="palco-hero" aria-hidden="true">
+      <picture><source media="(max-width: 760px)" srcset="assets/poster/hero-m-780.webp" width="780" height="1688"><img class="palco3d__poster" src="assets/poster/hero-1200.webp" srcset="assets/poster/hero-800.webp 800w, assets/poster/hero-1200.webp 1200w, assets/poster/hero-1800.webp 1800w" sizes="100vw" alt="" width="1800" height="1100" decoding="async" fetchpriority="high"></picture>
+    </div>
+    <div class="hero__luz" aria-hidden="true"></div>
+    <div class="hero__conteudo wrap">
+      <div class="hero__intro">
+        <p class="eyebrow" data-type>Brindes e presentes personalizados</p>
+        <h1 class="hero__titulo" id="hero-titulo"><span class="linha"><span>Presentes que</span></span> <span class="linha"><span>levam o <em>seu nome</em></span></span></h1>
+        <p class="hero__lead">Copos, canetas, chaveiros, kits e facas artesanais com nome, logo ou foto gravados a laser. Veja em 3D, personalize e peça pelo WhatsApp.</p>
+        <div class="hero__acoes">
+          <a class="btn btn--ouro" href="#estudio" data-magnetic>Personalizar agora<svg class="seta"><use href="#i-seta"/></svg></a>
+          <a class="btn btn--fantasma" href="#catalogo">Ver o catálogo</a>
+        </div>
+        <ul class="hero__fatos">
+          <li><strong>83</strong><span>produtos no catálogo</span></li>
+          <li><strong>3</strong><span>técnicas: laser, foto a laser e foto colorida</span></li>
+          <li><strong>R$ 18</strong><span>preço inicial por unidade</span></li>
+        </ul>
+      </div>
+      <ol class="hero__legendas" aria-label="Do presente fechado ao nome gravado">
+        <li data-n="1"><span class="n">01</span><div><h2>Escolha</h2><p>Mais de 80 produtos: copos, canetas, chaveiros, kits e facas artesanais.</p></div></li>
+        <li data-n="2"><span class="n">02</span><div><h2>Abra</h2><p>O mesmo presente, do jeito de quem vai receber: copo, caneta, chaveiro ou caneca.</p></div></li>
+        <li data-n="3"><span class="n">03</span><div><h2>Personalize</h2><p>Nome, logo ou foto gravados a laser, direto no material.</p></div></li>
+        <li data-n="4"><span class="n">04</span><div><h2>Presenteie</h2><p>Um brinde que a pessoa usa todo dia e lembra de quem deu.</p></div></li>
+      </ol>
+    </div>
+    <div class="hero__trilho" aria-hidden="true">
+      <div class="wrap hero__trilho-in">
+        <span data-n="1">01 Escolha</span><span data-n="2">02 Abra</span><span data-n="3">03 Personalize</span><span data-n="4">04 Presenteie</span>
+        <i class="hero__barra"><b></b></i>
+      </div>
+    </div>
+    <p class="hero__dica" aria-hidden="true"><span class="hero__mouse"></span>Role para abrir o presente</p>
+  </div>
+</section>
+
+<!-- ===================== FITAS ===================== -->
+<div class="fitas" aria-label="O que dá para gravar">
+  <div class="fita fita--a"><div class="fita__trilho" data-fita>
+    <span>Nome a laser</span><i>✦</i><span>Logo da empresa</span><i>✦</i><span>Foto na madeira</span><i>✦</i><span>Foto colorida na caneca</span><i>✦</i><span>Datas que importam</span><i>✦</i><span>Kits corporativos</span><i>✦</i><span>Padrinhos e formaturas</span><i>✦</i>
+  </div></div>
+  <div class="fita fita--b" aria-hidden="true"><div class="fita__trilho" data-fita>
+    <span>Presentes que levam o seu nome</span><i>✦</i><span>Peça pelo WhatsApp</span><i>✦</i><span>Veja em 3D antes de pedir</span><i>✦</i><span>A partir de R$ 18</span><i>✦</i>
+  </div></div>
+</div>
+
+<!-- ===================== CATEGORIAS ===================== -->
+<section class="sec sec--marfim" id="categorias" aria-labelledby="cat-titulo">
+  <div class="sec__fundo" aria-hidden="true"></div>
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Categorias</p>
+      <h2 id="cat-titulo" data-letters>Um presente para <em>cada pessoa</em></h2>
+      <p class="sec__apoio" data-reveal>Onze linhas, do chaveiro de R$ 18 à faca artesanal. Toque numa categoria e o catálogo abre filtrado.</p>
+    </header>
+    <ul class="cats" id="lista-categorias" data-stagger></ul>
+  </div>
+</section>
+
+<!-- ===================== VITRINE 3D ===================== -->
+<section class="vitrine sec-dark" id="vitrine" aria-labelledby="vit-titulo" data-cap="0">
+  <div class="vitrine__pin">
+    <div class="vitrine__fundo" aria-hidden="true"><canvas class="bokeh" data-bokeh></canvas></div>
+    <div class="vitrine__palco palco3d" id="palco-vitrine" aria-hidden="true"><div class="rotulos" id="rotulos-vitrine"></div></div>
+    <div class="wrap vitrine__grade">
+      <header class="vitrine__cab" data-reveal>
+        <p class="eyebrow" data-type>Vitrine 3D</p>
+        <h2 id="vit-titulo" data-letters>Cada produto, <em>por dentro</em></h2>
+      </header>
+      <nav class="vitrine__nav" aria-label="Produtos da vitrine">
+        <button type="button" data-ir-cap="0"><span>01</span>Copo</button>
+        <button type="button" data-ir-cap="1"><span>02</span>Caneta</button>
+        <button type="button" data-ir-cap="2"><span>03</span>Chaveiro</button>
+        <button type="button" data-ir-cap="3"><span>04</span>Garrafa</button>
+        <button type="button" data-ir-cap="4"><span>05</span>Taça</button>
+      </nav>
+      <div class="vitrine__caps">
+        <article class="cap" data-i="0" data-produto="148236">
+          <figure class="cap__poster"><img src="assets/poster/vit-copo-800.webp" alt="Copo térmico preto aberto em camadas: tampa, parede interna de inox, corpo e base de borracha" width="800" height="800" loading="lazy" decoding="async"></figure>
+          <p class="cap__n">01 / 05 · <span>Abra o copo e veja as camadas</span></p>
+          <h3>Copo térmico 500 ml</h3>
+          <p class="cap__texto">Inox com parede dupla, tampa rosqueável com bocal e borracha antideslizante no fundo. Leva nome ou logo a laser em volta do corpo.</p>
+          <ul class="cap__lista"><li>Parede dupla de inox</li><li>Tampa rosqueável com bocal</li><li>Base com borracha antideslizante</li><li>17,2 × 8,9 cm · 294 g</li></ul>
+          <div class="cap__compra"><p class="preco" data-preco-de="148236">R$ 48,00<small>/un</small></p><button class="btn btn--ouro btn--p" type="button" data-add="148236"><svg><use href="#i-mais"/></svg>Adicionar</button><a class="btn btn--fantasma btn--p" href="#estudio" data-estudio="copo">Personalizar</a></div>
+        </article>
+        <article class="cap" data-i="1" data-produto="145111">
+          <figure class="cap__poster"><img src="assets/poster/vit-caneta-800.webp" alt="Caneta metálica na diagonal com um nome gravado a laser no corpo" width="800" height="800" loading="lazy" decoding="async"></figure>
+          <p class="cap__n">02 / 05 · <span>Gire a caneta e grave o nome</span></p>
+          <h3>Caneta metal fina</h3>
+          <p class="cap__texto">Corpo metálico, carga azul 1.0 mm e acionamento por rotação. O nome fica gravado ao longo do corpo, como uma assinatura.</p>
+          <ul class="cap__lista"><li>Acionamento por rotação</li><li>Carga esferográfica azul 1.0 mm</li><li>13,1 cm · 11 g</li><li>6 cores no catálogo</li></ul>
+          <div class="cap__compra"><p class="preco" data-preco-de="145111">R$ 28,00<small>/un</small></p><button class="btn btn--ouro btn--p" type="button" data-add="145111"><svg><use href="#i-mais"/></svg>Adicionar</button><a class="btn btn--fantasma btn--p" href="#estudio" data-estudio="caneta">Personalizar</a></div>
+        </article>
+        <article class="cap" data-i="2" data-produto="146625">
+          <figure class="cap__poster"><img src="assets/poster/vit-chaveiro-800.webp" alt="Chaveiro de coração em inox com nomes gravados na frente" width="800" height="800" loading="lazy" decoding="async"></figure>
+          <p class="cap__n">03 / 05 · <span>Vire: dá para gravar dos dois lados</span></p>
+          <h3>Chaveiro coração</h3>
+          <p class="cap__texto">Metal em formato de coração com chapa central em inox. Na frente, os nomes; no verso brilhante, a data que importa.</p>
+          <ul class="cap__lista"><li>Chapa central em inox</li><li>Verso brilhante liso</li><li>6,6 × 3,1 cm · 19 g</li><li>Frente e verso personalizáveis</li></ul>
+          <div class="cap__compra"><p class="preco" data-preco-de="146625">R$ 18,00<small>/un</small></p><button class="btn btn--ouro btn--p" type="button" data-add="146625"><svg><use href="#i-mais"/></svg>Adicionar</button><a class="btn btn--fantasma btn--p" href="#estudio" data-estudio="chaveiro">Personalizar</a></div>
+        </article>
+        <article class="cap" data-i="3" data-produto="148336">
+          <figure class="cap__poster"><img src="assets/poster/vit-garrafa-800.webp" alt="Garrafa térmica preta com a tampa erguida mostrando o anel de silicone e o canudo" width="800" height="800" loading="lazy" decoding="async"></figure>
+          <p class="cap__n">04 / 05 · <span>Canudo ou bico, quente ou gelado</span></p>
+          <h3>Garrafa térmica 900 ml</h3>
+          <p class="cap__texto">Aço inox de parede dupla, tampa rosqueável com alça e anel de silicone para vedar. Dá para beber pelo canudo ou pelo bico.</p>
+          <ul class="cap__lista"><li>Parede dupla de inox</li><li>Anel de silicone na vedação</li><li>Canudo ou bico</li><li>24,3 × 8,9 cm · 455 g</li></ul>
+          <div class="cap__compra"><p class="preco" data-preco-de="148336">R$ 98,00<small>/un</small></p><button class="btn btn--ouro btn--p" type="button" data-add="148336"><svg><use href="#i-mais"/></svg>Adicionar</button><a class="btn btn--fantasma btn--p" href="#catalogo" data-filtro-cat="garrafas">Ver garrafas</a></div>
+        </article>
+        <article class="cap" data-i="4" data-produto="374763">
+          <figure class="cap__poster"><img src="assets/poster/vit-taca-800.webp" alt="Taça de gin vermelha desmontada: o bojo vira copo com a base encaixada" width="800" height="800" loading="lazy" decoding="async"></figure>
+          <p class="cap__n">05 / 05 · <span>Desmonte a taça e ela vira copo</span></p>
+          <h3>Taça de gin térmica</h3>
+          <p class="cap__texto">Estrutura de inox com parede dupla e haste com base emborrachada. Tire a haste, encaixe a base e ela vira um copo.</p>
+          <ul class="cap__lista"><li>Até 350 ml</li><li>Inox de parede dupla</li><li>Desmonta e vira copo</li><li>Várias cores no catálogo</li></ul>
+          <div class="cap__compra"><p class="preco" data-preco-de="374763">R$ 68,00<small>/un</small></p><button class="btn btn--ouro btn--p" type="button" data-add="374763"><svg><use href="#i-mais"/></svg>Adicionar</button><a class="btn btn--fantasma btn--p" href="#catalogo" data-filtro-cat="tacas">Ver taças</a></div>
+        </article>
+      </div>
+    </div>
+    <div class="vitrine__progresso" aria-hidden="true"><b></b></div>
+  </div>
+</section>
+
+<!-- ===================== ESTÚDIO ===================== -->
+<section class="sec sec--branco estudio" id="estudio" aria-labelledby="est-titulo">
+  <div class="sec__fundo" aria-hidden="true"></div>
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Estúdio de personalização</p>
+      <h2 id="est-titulo" data-letters>Veja o seu nome <em>gravado</em> antes de pedir</h2>
+      <p class="sec__apoio" data-reveal>Escolha o produto, escreva o nome e veja o laser trabalhar. Tem também foto: na tábua ela vira gravação, na caneca sai colorida.</p>
+    </header>
+    <div class="estudio__grade">
+      <div class="estudio__palco palco3d" id="palco-estudio">
+        <img class="palco3d__poster" src="assets/poster/estudio-800.webp" alt="Prévia de um copo térmico com um nome gravado a laser" width="800" height="800" loading="lazy" decoding="async">
+        <div class="estudio__hud">
+          <span class="selo-ilustrativo">Prévia ilustrativa</span>
+          <span class="estudio__girar"><svg><use href="#i-girar"/></svg>Arraste para girar</span>
+        </div>
+        <button class="estudio__regravar mini" type="button" data-regravar><svg><use href="#i-laser"/></svg><span>Gravar de novo</span></button>
+      </div>
+      <form class="estudio__painel" id="form-estudio" autocomplete="off" novalidate>
+        <fieldset class="opcoes opcoes--produto">
+          <legend><span class="passo">1</span>Produto</legend>
+          <label><input type="radio" name="produto" value="copo" checked><span><svg><use href="#c-copo"/></svg>Copo</span></label>
+          <label><input type="radio" name="produto" value="caneca"><span><svg><use href="#c-caneca"/></svg>Caneca</span></label>
+          <label><input type="radio" name="produto" value="caneta"><span><svg><use href="#c-caneta"/></svg>Caneta</span></label>
+          <label><input type="radio" name="produto" value="chaveiro"><span><svg><use href="#c-chaveiro"/></svg>Chaveiro</span></label>
+          <label><input type="radio" name="produto" value="tabua"><span><svg><use href="#c-tabua"/></svg>Tábua</span></label>
+        </fieldset>
+        <fieldset class="opcoes opcoes--tecnica">
+          <legend><span class="passo">2</span>Técnica</legend>
+          <label data-tec="laser"><input type="radio" name="tecnica" value="laser" checked><span><svg><use href="#i-laser"/></svg>Laser</span></label>
+          <label data-tec="foto-laser"><input type="radio" name="tecnica" value="foto-laser"><span><svg><use href="#i-foto"/></svg>Foto a laser</span></label>
+          <label data-tec="foto-cor"><input type="radio" name="tecnica" value="foto-cor"><span><svg><use href="#i-foto"/></svg>Foto colorida</span></label>
+        </fieldset>
+        <div class="campo" data-modo="texto">
+          <label for="est-texto"><span class="passo">3</span>Texto</label>
+          <input id="est-texto" name="texto" type="text" maxlength="22" placeholder="Seu nome aqui" enterkeyhint="done">
+          <input id="est-texto2" name="texto2" type="text" maxlength="28" placeholder="Linha 2 (opcional): data, cargo ou frase" aria-label="Segunda linha do texto, opcional">
+        </div>
+        <fieldset class="opcoes opcoes--fonte" data-modo="texto">
+          <legend>Fonte</legend>
+          <label><input type="radio" name="fonte" value="manuscrita" checked><span class="f-manuscrita">Manuscrita</span></label>
+          <label><input type="radio" name="fonte" value="classica"><span class="f-classica">Clássica</span></label>
+          <label><input type="radio" name="fonte" value="moderna"><span class="f-moderna">Moderna</span></label>
+        </fieldset>
+        <div class="campo campo--foto" data-modo="foto">
+          <span class="campo__rotulo"><span class="passo">3</span>Foto</span>
+          <div class="foto-acoes">
+            <label class="btn btn--contorno btn--p" for="est-foto"><svg><use href="#i-upload"/></svg>Escolher foto</label>
+            <input id="est-foto" class="sr" type="file" accept="image/*">
+            <button class="btn btn--contorno btn--p" type="button" data-foto-exemplo>Usar exemplo</button>
+          </div>
+          <p class="nota">A foto fica só no seu aparelho. Para o pedido, você manda ela no WhatsApp.</p>
+        </div>
+        <fieldset class="opcoes opcoes--cor">
+          <legend>Cor do produto</legend>
+          <div class="cores" id="est-cores"></div>
+        </fieldset>
+        <div class="estudio__resumo">
+          <p class="estudio__produto" id="est-resumo">Copo térmico 500 ml · Gravação a laser</p>
+          <p class="preco" id="est-preco">R$ 48,00<small>/un</small></p>
+        </div>
+        <div class="estudio__acoes">
+          <button class="btn btn--ouro" type="submit"><svg><use href="#i-sacola"/></svg>Adicionar ao pedido</button>
+          <a class="btn btn--whats" id="est-whats" href="#" target="_blank" rel="noopener"><svg><use href="#i-whats"/></svg>Pedir no WhatsApp</a>
+        </div>
+        <p class="nota">A prévia é ilustrativa. A arte final é combinada com você pelo WhatsApp.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CATÁLOGO ===================== -->
+<section class="sec sec--marfim catalogo" id="catalogo" aria-labelledby="catalogo-titulo">
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Catálogo completo</p>
+      <h2 id="catalogo-titulo" data-letters>83 produtos para <em>personalizar</em></h2>
+      <p class="sec__apoio" data-reveal>Preço por unidade. Caixas e pacotes fechados saem sob consulta, com a personalização incluída no orçamento.</p>
+    </header>
+    <div class="cat-barra" data-reveal>
+      <div class="chips" id="chips" role="group" aria-label="Filtrar por categoria" data-lenis-prevent></div>
+      <div class="cat-barra__dir">
+        <label class="seletor"><span>Ordenar</span>
+          <select id="ordem">
+            <option value="destaque">Destaques</option>
+            <option value="menor">Menor preço</option>
+            <option value="maior">Maior preço</option>
+            <option value="az">Nome (A–Z)</option>
+          </select>
+        </label>
+      </div>
+    </div>
+    <p class="cat-info" id="cat-info" aria-live="polite"></p>
+    <ul class="grade" id="grade"></ul>
+    <div class="cat-mais"><button class="btn btn--contorno" type="button" id="ver-mais">Ver mais produtos</button></div>
+    <noscript><p class="cat-info">O catálogo precisa de JavaScript. Fale com a gente no WhatsApp: (55) 99971-3946.</p></noscript>
+  </div>
+</section>
+
+<!-- ===================== ARTESANAL ===================== -->
+<section class="sec sec-dark artesanal" id="artesanal" aria-labelledby="art-titulo">
+  <div class="sec__fundo sec__fundo--escuro" aria-hidden="true"><canvas class="bokeh" data-bokeh="ouro"></canvas></div>
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Linha artesanal</p>
+      <h2 id="art-titulo" data-letters>Facas feitas <em>à mão</em></h2>
+      <p class="sec__apoio" data-reveal>Lâmina trabalhada e cabo de resina, osso ou madeira, prontas para receber nome ou logo. A Faca Resina vem da Cutelaria Cascavel, com lâmina em aço inox 420.</p>
+    </header>
+    <ul class="facas" id="lista-facas" data-stagger></ul>
+  </div>
+</section>
+
+<!-- ===================== OCASIÕES ===================== -->
+<section class="sec sec--seda" id="ocasioes" aria-labelledby="oc-titulo">
+  <div class="sec__fundo" aria-hidden="true"></div>
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Para cada ocasião</p>
+      <h2 id="oc-titulo" data-letters>Do churrasco ao <em>casamento</em></h2>
+      <p class="sec__apoio" data-reveal>Atalhos prontos para as datas que mais pedem presente. Toque e veja só o que combina.</p>
+    </header>
+    <ul class="ocasioes" id="lista-ocasioes" data-stagger></ul>
+  </div>
+</section>
+
+<!-- ===================== COMO FUNCIONA ===================== -->
+<section class="sec sec-dark como" id="como" aria-labelledby="como-titulo">
+  <div class="sec__fundo sec__fundo--escuro" aria-hidden="true"><canvas class="bokeh" data-bokeh></canvas></div>
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Como funciona</p>
+      <h2 id="como-titulo" data-letters>Quatro passos até o <em>presente pronto</em></h2>
+    </header>
+    <div class="como__palco">
+      <ol class="como__anel" data-stagger>
+        <li class="passo-card" style="--i:0"><span class="passo-card__n">1</span><svg><use href="#i-presente"/></svg><h3>Escolha</h3><p>Pelo catálogo, pela vitrine ou pelo estúdio. Pode misturar itens no mesmo pedido.</p></li>
+        <li class="passo-card" style="--i:1"><span class="passo-card__n">2</span><svg><use href="#i-texto"/></svg><h3>Mande o texto</h3><p>Nome, frase, logo ou foto. Tudo vai na mesma conversa do WhatsApp.</p></li>
+        <li class="passo-card" style="--i:2"><span class="passo-card__n">3</span><svg><use href="#i-check"/></svg><h3>Confira a arte</h3><p>Combinamos com você como a gravação vai ficar antes de produzir.</p></li>
+        <li class="passo-card" style="--i:3"><span class="passo-card__n">4</span><svg><use href="#i-laser"/></svg><h3>Receba gravado</h3><p>Prazo e entrega combinados no pedido: [preencher prazo médio].</p></li>
+      </ol>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== GALERIA ===================== -->
+<section class="galeria" id="galeria" aria-labelledby="gal-titulo">
+  <div class="galeria__pin">
+    <header class="galeria__cab wrap">
+      <p class="eyebrow" data-type>Inspiração</p>
+      <h2 id="gal-titulo" data-letters>Feitos para <em>usar todo dia</em></h2>
+    </header>
+    <ul class="galeria__tunel" id="galeria-tunel"></ul>
+  </div>
+</section>
+
+<!-- ===================== DÚVIDAS ===================== -->
+<section class="sec sec--marfim" id="duvidas" aria-labelledby="duv-titulo">
+  <div class="wrap duvidas">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Dúvidas</p>
+      <h2 id="duv-titulo" data-letters>Perguntas <em>de balcão</em></h2>
+      <p class="sec__apoio" data-reveal>O que mais perguntam antes de pedir. Não achou? Chama no WhatsApp.</p>
+      <a class="btn btn--whats" href="#" data-whats="contato" target="_blank" rel="noopener"><svg><use href="#i-whats"/></svg>Perguntar no WhatsApp</a>
+    </header>
+    <div class="acordeao" data-stagger>
+      <details><summary>Posso comprar uma unidade só?</summary><p>Pode. Os preços do site são por unidade. Caixas e pacotes fechados saem sob consulta.</p></details>
+      <details><summary>Que tipos de personalização vocês fazem?</summary><p>Gravação a laser de nome, frase ou logo; foto gravada a laser em madeira e metal; e foto colorida em canecas e xícaras.</p></details>
+      <details><summary>Como mando o meu logo ou a foto?</summary><p>Pelo WhatsApp, junto com o pedido. Logo de preferência em PDF, SVG ou PNG grande; foto com boa luz e rosto bem visível.</p></details>
+      <details><summary>A prévia do estúdio é igual ao produto?</summary><p>Não exatamente. Ela é ilustrativa e serve para você ver a ideia. A arte final é combinada com você antes de gravar.</p></details>
+      <details><summary>Qual o prazo de produção?</summary><p>[preencher: prazo médio de produção e de entrega]</p></details>
+      <details><summary>Tem quantidade mínima para personalizar?</summary><p>[preencher: quantidade mínima, se houver]</p></details>
+      <details><summary>Vocês entregam ou tem retirada?</summary><p>[preencher: cidade, entrega e retirada]</p></details>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOBRE ===================== -->
+<section class="sec sec--seda sobre" id="sobre" aria-labelledby="sobre-titulo">
+  <div class="wrap sobre__grade">
+    <figure class="sobre__foto" data-reveal="clip"><img src="assets/produtos/148273-0-800.webp" alt="Kit churrasco de 10 peças em estojo aberto" width="800" height="1000" loading="lazy" decoding="async"></figure>
+    <div class="sobre__texto">
+      <p class="eyebrow" data-type>Sobre a QBrindes</p>
+      <h2 id="sobre-titulo" data-letters>Presente bom é o que <em>tem dono</em></h2>
+      <p class="preencher" data-reveal>[preencher: história curta da QBrindes — quem são, desde quando, de onde.]</p>
+      <ul class="valores" data-stagger>
+        <li><svg><use href="#i-laser"/></svg><h3>Gravado de verdade</h3><p>O laser marca o próprio material: não descasca e não desbota com o uso.</p></li>
+        <li><svg><use href="#i-whats"/></svg><h3>Atendimento direto</h3><p>Você fala com quem faz, pelo WhatsApp, do orçamento à entrega.</p></li>
+        <li><svg><use href="#i-presente"/></svg><h3>De um a muitos</h3><p>Uma peça para um presente ou um lote para a empresa inteira.</p></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CONTATO ===================== -->
+<section class="sec sec-dark contato" id="contato" aria-labelledby="contato-titulo">
+  <div class="sec__fundo sec__fundo--escuro" aria-hidden="true"><canvas class="bokeh" data-bokeh="ouro"></canvas></div>
+  <div class="wrap">
+    <header class="sec__cab">
+      <p class="eyebrow" data-type>Contato</p>
+      <h2 id="contato-titulo" data-letters>Vamos montar o seu <em>presente</em></h2>
+      <p class="sec__apoio" data-reveal>Mande o que você quer gravar e para quando. A gente responde com o orçamento.</p>
+    </header>
+    <ul class="contatos" data-stagger>
+      <li class="contato-card contato-card--whats"><svg><use href="#i-whats"/></svg><h3>WhatsApp</h3><p data-loja="whatsappExibir">(55) 99971-3946</p><a class="btn btn--whats" href="#" data-whats="contato" target="_blank" rel="noopener">Chamar agora</a></li>
+      <li class="contato-card"><svg><use href="#i-email"/></svg><h3>E-mail</h3><p><a href="mailto:qbrindes1015@gmail.com" data-loja-email>qbrindes1015@gmail.com</a></p></li>
+      <li class="contato-card"><svg><use href="#i-pino"/></svg><h3>Endereço</h3><p data-loja="endereco">[preencher endereço e cidade]</p></li>
+      <li class="contato-card"><svg><use href="#i-relogio"/></svg><h3>Horário</h3><p data-loja="horario">[preencher horário]</p></li>
+      <li class="contato-card"><svg><use href="#i-insta"/></svg><h3>Instagram</h3><p data-loja="instagram">[preencher @ do Instagram]</p></li>
+    </ul>
+  </div>
+</section>
+
+</main>
+
+<footer class="rodape">
+  <div class="wrap rodape__grade">
+    <div class="rodape__marca">
+      <svg class="rodape__logo" viewBox="-2 -4 362 152" role="img" aria-label="QBrindes"><use href="#logo"/></svg>
+      <p class="rodape__slogan">E presentes personalizados</p>
+      <p>Brindes com nome, logo e foto gravados a laser.</p>
+    </div>
+    <nav aria-label="Rodapé"><h2>Navegar</h2><a href="#vitrine">Vitrine 3D</a><a href="#estudio">Estúdio</a><a href="#catalogo">Catálogo</a><a href="#ocasioes">Ocasiões</a><a href="#duvidas">Dúvidas</a></nav>
+    <div><h2>Categorias</h2><div id="rodape-cats"></div></div>
+    <div><h2>Contato</h2><a href="#" data-whats="contato" target="_blank" rel="noopener">WhatsApp (55) 99971-3946</a><a href="mailto:qbrindes1015@gmail.com">qbrindes1015@gmail.com</a><p data-loja="cidade">[preencher cidade/UF]</p></div>
+  </div>
+  <div class="wrap rodape__base"><p>© 2026 QBrindes & Presentes · CNPJ [preencher]</p><p>Demonstração feita por Giordan Bohrer. Imagens 3D são ilustrativas.</p></div>
+</footer>
+
+<a class="whats-flutuante" href="#" data-whats="contato" target="_blank" rel="noopener" aria-label="Falar no WhatsApp"><svg><use href="#i-whats"/></svg></a>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ===================== DIÁLOGOS ===================== -->
+<dialog class="busca" id="dlg-busca" aria-labelledby="busca-rotulo">
+  <form method="dialog" class="busca__caixa" role="search" onsubmit="return false">
+    <label class="sr" for="busca-campo" id="busca-rotulo">Buscar produtos</label>
+    <svg><use href="#i-busca"/></svg>
+    <input id="busca-campo" type="search" placeholder="Copo, caneta, chaveiro, kit…" autocomplete="off" spellcheck="false" aria-controls="busca-lista" aria-autocomplete="list" role="combobox" aria-expanded="true">
+    <button class="icone" type="button" data-fechar aria-label="Fechar busca"><svg><use href="#i-fechar"/></svg></button>
+    <i class="busca__linha" aria-hidden="true"></i>
+  </form>
+  <div class="busca__corpo" data-lenis-prevent>
+    <div class="busca__populares" id="busca-populares"></div>
+    <ul class="busca__lista" id="busca-lista" role="listbox" aria-label="Resultados"></ul>
+    <div class="busca__vazio" id="busca-vazio" hidden></div>
+  </div>
+  <p class="busca__rodape"><kbd>↑</kbd><kbd>↓</kbd> navegar · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> fechar</p>
+</dialog>
+
+<dialog class="gaveta" id="dlg-pedido" aria-labelledby="pedido-titulo">
+  <div class="gaveta__cab">
+    <h2 id="pedido-titulo">Seu pedido</h2>
+    <button class="icone" type="button" data-fechar aria-label="Fechar pedido"><svg><use href="#i-fechar"/></svg></button>
+  </div>
+  <div class="gaveta__corpo" data-lenis-prevent>
+    <ul class="pedido-lista" id="pedido-lista"></ul>
+    <div class="pedido-vazio" id="pedido-vazio"><svg><use href="#i-presente"/></svg><p>Seu pedido está vazio.</p><a class="btn btn--contorno btn--p" href="#catalogo" data-fechar-ir>Ver o catálogo</a></div>
+    <form class="pedido-form" id="pedido-form" autocomplete="on">
+      <label for="ped-nome">Seu nome <small>(opcional)</small></label>
+      <input id="ped-nome" name="nome" type="text" autocomplete="name" placeholder="Como podemos te chamar?">
+      <label for="ped-obs">Observações <small>(opcional)</small></label>
+      <textarea id="ped-obs" name="obs" rows="2" placeholder="Para quando precisa, quantidade de caixas, cores…"></textarea>
+    </form>
+  </div>
+  <div class="gaveta__rodape">
+    <div class="pedido-total"><span>Estimativa</span><strong id="pedido-total">R$ 0,00</strong></div>
+    <p class="nota" id="pedido-nota">Itens com personalização ou em caixa têm o valor final confirmado no WhatsApp.</p>
+    <a class="btn btn--whats btn--largo" id="pedido-enviar" href="#" target="_blank" rel="noopener"><svg><use href="#i-whats"/></svg>Enviar pedido pelo WhatsApp</a>
+  </div>
+</dialog>
+
+<dialog class="modal ficha" id="dlg-ficha" aria-labelledby="ficha-titulo">
+  <button class="icone modal__fechar" type="button" data-fechar aria-label="Fechar"><svg><use href="#i-fechar"/></svg></button>
+  <div class="ficha__grade" data-lenis-prevent>
+    <div class="ficha__galeria"><div class="ficha__foto" id="ficha-foto"></div><div class="ficha__miniaturas" id="ficha-mini"></div></div>
+    <div class="ficha__info">
+      <p class="eyebrow" id="ficha-cat"></p>
+      <h2 id="ficha-titulo"></h2>
+      <p class="preco" id="ficha-preco"></p>
+      <p class="ficha__resumo" id="ficha-resumo"></p>
+      <dl class="ficha__medidas" id="ficha-medidas"></dl>
+      <div class="ficha__opcoes" id="ficha-opcoes"></div>
+      <div class="ficha__tec" id="ficha-tec"></div>
+      <div class="campo"><label for="ficha-texto">Texto para gravar <small>(opcional)</small></label><input id="ficha-texto" type="text" maxlength="40" placeholder="Nome, frase ou deixe em branco"></div>
+      <div class="ficha__compra">
+        <div class="qtd" role="group" aria-label="Quantidade"><button type="button" class="icone" data-qtd="-1" aria-label="Diminuir"><svg><use href="#i-menos"/></svg></button><input id="ficha-qtd" type="number" min="1" max="9999" value="1" inputmode="numeric" aria-label="Quantidade"><button type="button" class="icone" data-qtd="1" aria-label="Aumentar"><svg><use href="#i-mais"/></svg></button></div>
+        <button class="btn btn--ouro" type="button" id="ficha-add"><svg><use href="#i-sacola"/></svg>Adicionar ao pedido</button>
+      </div>
+      <div class="ficha__links"><a class="btn btn--whats btn--p" id="ficha-whats" href="#" target="_blank" rel="noopener"><svg><use href="#i-whats"/></svg>Perguntar no WhatsApp</a><a class="btn btn--contorno btn--p" id="ficha-estudio" href="#estudio" hidden>Ver no estúdio 3D</a></div>
+    </div>
+  </div>
+</dialog>
+
+<dialog class="modal demo" id="dlg-demo" aria-labelledby="demo-titulo">
+  <button class="icone modal__fechar" type="button" data-fechar aria-label="Fechar"><svg><use href="#i-fechar"/></svg></button>
+  <div class="demo__corpo" data-lenis-prevent>
+    <p class="eyebrow">Sobre a demo</p>
+    <h2 id="demo-titulo">O que é real e o que falta</h2>
+    <h3>Real, do catálogo da QBrindes</h3>
+    <ul><li>83 produtos com nome, descrição, medidas, cores e preço por unidade.</li><li>Fotos dos produtos (recortadas e tratadas no mesmo padrão).</li><li>WhatsApp (55) 99971-3946 e e-mail qbrindes1015@gmail.com.</li><li>Técnicas: gravação a laser, foto a laser e foto colorida.</li></ul>
+    <h3>Ilustrativo</h3>
+    <ul><li>Os modelos 3D (caixa de presente, copo, caneta, chaveiro, garrafa, taça, caneca e tábua) são desenhados no próprio site para mostrar a ideia; cores e proporções são aproximadas.</li><li>O logo foi redesenhado em vetor a partir da imagem do catálogo antigo.</li><li>Nenhum pagamento é feito no site: o pedido vai pronto para o WhatsApp.</li></ul>
+    <h3>Falta para a versão final</h3>
+    <ul><li>Cidade, endereço, horário, Instagram e CNPJ.</li><li>Prazo de produção e quantidade mínima.</li><li>História da marca e logo original em vetor.</li><li>Confirmar quais técnicas valem para cada produto e os preços de caixa.</li></ul>
+    <h3>Créditos</h3>
+    <p>Fontes Playfair Display, Inter e Great Vibes (SIL OFL). three.js e Lenis (MIT). Sons sintetizados no navegador, sem arquivos.</p>
+  </div>
+</dialog>
+
+<script src="js/data.js?v=1" defer></script>
+<script src="js/catalogo.js?v=1" defer></script>
+<script src="js/busca-model.js?v=1" defer></script>
+<script src="js/pedido-model.js?v=1" defer></script>
+<script src="js/app.js?v=1" defer></script>
+<script src="js/vendor/lenis.min.js?v=1" defer></script>
+<script src="js/motion.js?v=1" defer></script>
+<script src="js/som.js?v=1" defer></script>
+<script type="module" src="js/3d/main.js?v=1"></script>
+</body>
+</html>

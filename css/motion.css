@@ -1,0 +1,222 @@
+/* =========================================================
+   QBrindes — movimento
+   Regra de ouro: estado escondido só existe sob .motion-on.
+   Com .motion-paused ou sem JavaScript, tudo aparece completo.
+   ========================================================= */
+
+@property --s3d-x { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --s3d-y { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --s3d-z { syntax: '<length>'; inherits: false; initial-value: 0px; }
+@property --s3d-rx { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@property --s3d-ry { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@property --vit-cor { syntax: '<color>'; inherits: true; initial-value: rgba(255, 178, 30, .34); }
+@property --t { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --giro { syntax: '<angle>'; inherits: false; initial-value: 20deg; }
+@property --deriva { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+
+/* ---------- Abertura da página ---------- */
+.motion-on .topo { animation: topo-entra 600ms var(--ease) backwards; }
+@keyframes topo-entra { from { transform: translateY(-100%); opacity: 0; } }
+.motion-on .hero__titulo .linha > span { animation: linha-sobe 1000ms var(--ease) 120ms backwards; }
+.motion-on .hero__titulo .linha:nth-child(2) > span { animation-delay: 230ms; }
+@keyframes linha-sobe { from { transform: translateY(108%); } }
+.motion-on .hero .eyebrow { animation: sobe 700ms var(--ease) 60ms backwards; }
+.motion-on .hero__lead { animation: sobe 800ms var(--ease) 320ms backwards; }
+.motion-on .hero__acoes { animation: sobe 800ms var(--ease) 440ms backwards; }
+.motion-on .hero__fatos { animation: sobe 800ms var(--ease) 560ms backwards; }
+.motion-on .hero__dica { animation: aparece 900ms var(--ease) 1500ms backwards; }
+.motion-on .hero__trilho { animation: aparece 900ms var(--ease) 1200ms backwards; }
+.motion-on .hero__palco { animation: aparece 1400ms var(--ease) backwards; }
+@keyframes sobe { from { opacity: 0; transform: translateY(26px); } }
+@keyframes aparece { from { opacity: 0; } }
+.motion-on .hero__mouse::after { animation: rodinha 1.8s var(--ease-io) infinite; }
+@keyframes rodinha { 0% { transform: translateY(0); opacity: 1; } 70% { transform: translateY(10px); opacity: 0; } 100% { opacity: 0; } }
+.hero__dica { transition: opacity var(--t3) var(--ease); }
+.hero:not([data-step="0"]) .hero__dica { opacity: 0; }
+
+/* Legendas do hero fixado: uma por etapa */
+.pin-on.motion-on .hero__legendas { display: block; position: absolute; left: var(--gutter); bottom: 112px; width: min(430px, calc(100% - var(--gutter) * 2)); height: 150px; }
+.pin-on.motion-on .hero__legendas li { position: absolute; inset: auto 0 0; opacity: 0; transform: translateY(22px); filter: blur(6px); transition: opacity 520ms var(--ease), transform 640ms var(--ease), filter 640ms var(--ease); }
+.hero[data-step="1"] .hero__legendas li[data-n="1"], .hero[data-step="2"] .hero__legendas li[data-n="2"],
+.hero[data-step="3"] .hero__legendas li[data-n="3"], .hero[data-step="4"] .hero__legendas li[data-n="4"] { opacity: 1; transform: none; filter: none; }
+@media (max-width: 760px) {
+  .pin-on.motion-on .hero__legendas { bottom: 92px; height: 130px; }
+  .pin-on.motion-on .hero__legendas .n { font-size: 1.8rem; }
+  .pin-on.motion-on .hero__legendas h2 { font-size: 1.3rem; }
+  .pin-on.motion-on .hero__legendas p { font-size: .88rem; }
+}
+
+/* ---------- Revelações ao rolar ---------- */
+.motion-on [data-reveal] { opacity: 0; transform: translateY(34px); transition: opacity 720ms var(--ease), transform 720ms var(--ease); }
+.motion-on [data-reveal].visivel { opacity: 1; transform: none; }
+.motion-on [data-reveal="clip"] { opacity: 1; transform: none; }
+.motion-on [data-reveal="clip"]::after { content: ''; position: absolute; inset: 0; z-index: 2; background: var(--ultra); transform-origin: top; transition: transform 1200ms var(--ease-io); }
+.motion-on [data-reveal="clip"] img { transform: scale(1.08); transition: transform 1600ms var(--ease); }
+.motion-on [data-reveal="clip"].visivel::after { transform: scaleY(0); }
+.motion-on [data-reveal="clip"].visivel img { transform: none; }
+.motion-on [data-reveal="line"] { transform: scaleX(0); transform-origin: left; transition: transform 900ms var(--ease); opacity: 1; }
+.motion-on [data-reveal="line"].visivel { transform: none; }
+
+/* Cascata: sem suporte a view(), cada filho entra com 80 ms de atraso (máx. 6 passos) */
+@supports not (animation-timeline: view()) {
+  .motion-on [data-stagger] > * { opacity: 0; transform: translateY(40px) scale(.985); transition: opacity 720ms var(--ease), transform 720ms var(--ease); transition-delay: calc(min(var(--i, 0), 6) * 80ms); }
+  .motion-on [data-stagger].visivel > * { opacity: 1; transform: none; }
+}
+
+/* ---------- Escrita animada ---------- */
+.digitando::after { content: ''; display: inline-block; width: 2px; height: 1.05em; margin-left: 3px; vertical-align: -.15em; background: var(--ouro); animation: cursor 900ms steps(1) infinite; }
+@keyframes cursor { 50% { opacity: 0; } }
+.palavra { display: inline-block; white-space: nowrap; }
+.motion-on .letras .letra { display: inline-block; opacity: 0; transform: translate(0, .42em) rotate(4deg); transition: opacity 280ms var(--ease), transform 640ms var(--ease); transition-delay: var(--d, 0ms); }
+.motion-on .letras.visivel .letra { opacity: 1; transform: none; }
+
+/* ---------- 3D de entrada na rolagem (compositor) ---------- */
+@keyframes s3d-in {
+  from { opacity: 0; transform: perspective(1200px) translate3d(var(--s3d-x), var(--s3d-y), var(--s3d-z)) rotateX(var(--s3d-rx)) rotateY(var(--s3d-ry)); }
+}
+@keyframes s3d-foto { from { transform: perspective(900px) rotateY(-14deg) rotateX(8deg) scale(1.22); } }
+@keyframes s3d-moeda { from { transform: perspective(700px) rotateY(-120deg) scale(.7); opacity: 0; } }
+@keyframes s3d-sai { to { opacity: 0; transform: perspective(1200px) translateZ(-160px) scale(.92); } }
+@keyframes torcer-a { 0% { transform: translateY(-50%) rotate(-3.2deg) rotateX(-38deg); } 50% { transform: translateY(-50%) rotate(-3.2deg) rotateX(0deg); } 100% { transform: translateY(-50%) rotate(-3.2deg) rotateX(34deg); } }
+@keyframes torcer-b { 0% { transform: translateY(-50%) rotate(2.6deg) rotateX(30deg); } 50% { transform: translateY(-50%) rotate(2.6deg) rotateX(0deg); } 100% { transform: translateY(-50%) rotate(2.6deg) rotateX(-28deg); } }
+@keyframes deriva { from { --deriva: -7%; } to { --deriva: 7%; } }
+@keyframes varre { from { transform: translateX(-60%) skewX(-18deg); } to { transform: translateX(160%) skewX(-18deg); } }
+@keyframes giro-como { from { --giro: 22deg; } to { --giro: -142deg; } }
+@keyframes tunel { from { --t: 0; } to { --t: 1; } }
+
+@supports (animation-timeline: view()) {
+  .motion-on .s3d .cat,
+  .motion-on .s3d .card,
+  .motion-on .s3d .ocasiao,
+  .motion-on .s3d .faca,
+  .motion-on .s3d .valores li,
+  .motion-on .s3d .contato-card,
+  .motion-on .s3d .acordeao details,
+  .motion-on .s3d .como__anel:not(.anel-on) .passo-card,
+  .motion-on .rodape.s3d .rodape__grade > * {
+    animation: s3d-in linear backwards;
+    animation-timeline: view();
+    animation-range: entry calc(var(--k, 0) * 6%) cover calc(40% + var(--k, 0) * 6%);
+    animation-timing-function: cubic-bezier(.16, 1, .3, 1);
+  }
+  .cat { --s3d-rx: 22deg; --s3d-y: 70px; --s3d-z: -90px; transform-origin: 50% 100%; }
+  .card { --s3d-rx: 18deg; --s3d-ry: 6deg; --s3d-z: -110px; --s3d-y: 40px; }
+  .card:nth-child(even) { --s3d-ry: -6deg; }
+  .ocasiao { --s3d-ry: 18deg; --s3d-x: -30px; }
+  .ocasiao:nth-child(even) { --s3d-ry: -18deg; --s3d-x: 30px; }
+  .faca { --s3d-rx: 16deg; --s3d-z: -120px; --s3d-y: 50px; }
+  .valores li { --s3d-rx: -40deg; transform-origin: 50% 0; }
+  .contato-card { --s3d-rx: 20deg; --s3d-y: 40px; --s3d-z: -80px; }
+  .acordeao details { --s3d-ry: -10deg; --s3d-x: 30px; }
+  .rodape__grade > * { --s3d-rx: 16deg; --s3d-y: 30px; }
+  .passo-card { --s3d-ry: -14deg; --s3d-z: -80px; }
+
+  /* Colunas da grade entram 6% depois da anterior */
+  .cats > :nth-child(4n+2), .grade > :nth-child(4n+2), .facas > :nth-child(5n+2) { --k: 1; }
+  .cats > :nth-child(4n+3), .grade > :nth-child(4n+3), .facas > :nth-child(5n+3) { --k: 2; }
+  .cats > :nth-child(4n+4), .grade > :nth-child(4n+4), .facas > :nth-child(5n+4) { --k: 3; }
+  .facas > :nth-child(5n+5) { --k: 4; }
+  .ocasioes > :nth-child(3n+2), .valores > :nth-child(2), .contatos > :nth-child(2) { --k: 1; }
+  .ocasioes > :nth-child(3n+3), .valores > :nth-child(3), .contatos > :nth-child(3) { --k: 2; }
+  .contatos > :nth-child(4) { --k: 3; }
+  .contatos > :nth-child(5) { --k: 4; }
+  @media (max-width: 1020px) {
+    .cats > *, .grade > * { --k: 0; }
+    .cats > :nth-child(3n+2), .grade > :nth-child(3n+2) { --k: 1; }
+    .cats > :nth-child(3n+3), .grade > :nth-child(3n+3) { --k: 2; }
+  }
+  @media (max-width: 760px) {
+    .cats > *, .grade > *, .facas > *, .ocasioes > *, .contatos > *, .valores > * { --k: 0; }
+    .cats > :nth-child(even), .grade > :nth-child(even), .facas > :nth-child(even) { --k: 1; }
+  }
+
+  /* Dentro dos cartões */
+  .motion-on .s3d .card__foto img { animation: s3d-foto linear backwards; animation-timeline: view(); animation-range: entry 0% cover 45%; }
+  .motion-on .s3d .cat__foto img { animation: s3d-moeda linear backwards; animation-timeline: view(); animation-range: entry 10% cover 45%; }
+  .motion-on .s3d .ocasiao__palco img:nth-child(1) { animation: s3d-moeda linear backwards; animation-timeline: view(); animation-range: entry 20% cover 50%; }
+
+  /* Fitas torcidas */
+  .motion-on .fitas { perspective: 900px; }
+  .motion-on .fitas.s3d .fita--a { animation: torcer-a linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+  .motion-on .fitas.s3d .fita--b { animation: torcer-b linear both; animation-timeline: view(); animation-range: cover 0% cover 100%; }
+
+  /* A foto do Sobre recua ao sair */
+  .motion-on .s3d .sobre__foto { animation: s3d-sai linear both; animation-timeline: view(); animation-range: exit 0% exit 100%; }
+
+  /* Fundos que andam com a rolagem: padrão desliza ±7% e um brilho atravessa as seções escuras */
+  .sec { view-timeline: --sec block; }
+  .motion-on .sec-on .sec__fundo::before { transform: translateY(var(--deriva)); animation: deriva linear both, respira 9s var(--ease-io) infinite alternate; animation-timeline: --sec, auto; }
+  .motion-on .sec-on .sec__fundo--escuro::after { content: ''; position: absolute; top: -20%; bottom: -20%; width: 40%; background: linear-gradient(90deg, transparent, rgba(143, 134, 255, .1), rgba(255, 178, 30, .06), transparent); animation: varre linear both; animation-timeline: --sec; mix-blend-mode: screen; }
+
+  /* Como funciona: o anel gira com a seção */
+  .motion-on .como.sec-on .como__anel.anel-on { animation: giro-como linear both; animation-timeline: --sec; animation-range: cover 15% cover 85%; }
+
+  /* Túnel da galeria */
+  .motion-on .galeria.tunel-on { view-timeline: --galeria block; }
+  .motion-on .galeria.tunel-on .galeria__tunel { animation: tunel linear both; animation-timeline: --galeria; animation-range: contain 0% contain 100%; }
+}
+@keyframes respira { from { opacity: .035; } to { opacity: .075; } }
+
+/* ---------- Como funciona em anel 3D (computador) ---------- */
+@media (min-width: 1021px) {
+  .motion-on .como__anel.anel-on { position: relative; display: block; height: 420px; transform-style: preserve-3d; transform: translateZ(-560px) rotateY(var(--giro)); }
+  .motion-on .como__anel.anel-on .passo-card { position: absolute; left: 50%; top: 10px; width: 360px; margin-left: -180px; min-height: 300px; transform: rotateY(calc(var(--i) * 40deg)) translateZ(560px); backface-visibility: hidden; -webkit-backface-visibility: hidden; opacity: 1; }
+  .motion-on .como__palco { perspective: 1500px; perspective-origin: 50% 40%; }
+}
+
+/* ---------- Túnel da galeria (quando o JS liga) ---------- */
+.motion-on .galeria.tunel-on { height: 360vh; }
+.motion-on .galeria.tunel-on .galeria__pin { position: sticky; top: 0; height: 100svh; overflow: hidden; padding: 0; perspective: 900px; perspective-origin: 50% 50%; display: grid; align-content: start; padding-top: calc(var(--topo-h) + 10px); }
+.motion-on .galeria.tunel-on .galeria__cab { text-align: center; display: grid; justify-items: center; }
+.motion-on .galeria.tunel-on .galeria__cab h2 { font-size: clamp(2.2rem, 5vw, 4.2rem); }
+.motion-on .galeria.tunel-on .galeria__tunel { position: absolute; inset: 0; display: block; max-width: none; padding: 0; transform-style: preserve-3d; }
+.motion-on .galeria.tunel-on .galeria__tunel li {
+  --z: calc(var(--t) * 9000 - var(--d));
+  position: absolute; left: var(--x); top: var(--y); width: clamp(150px, 21vw, 300px);
+  transform: translate(-50%, -50%) translateZ(calc(var(--z) * 1px)) rotateY(var(--ry, 0deg));
+  opacity: min(clamp(0, calc((var(--z) + 3200) / 900), 1), clamp(0, calc((420 - var(--z)) / 360), 1));
+  will-change: transform, opacity;
+}
+.galeria__tunel li figcaption { display: none; }
+.motion-on .galeria.tunel-on .galeria__tunel li figcaption { display: block; position: absolute; left: 10px; bottom: 10px; right: 10px; }
+
+/* ---------- Contínuas ---------- */
+.motion-on .fita__trilho { animation: fita-correr 38s linear infinite; }
+.motion-on .fita--b .fita__trilho { animation-direction: reverse; animation-duration: 46s; }
+.fita:hover .fita__trilho, .anim-off .fita__trilho { animation-play-state: paused; }
+@keyframes fita-correr { to { transform: translateX(-50%); } }
+.motion-on .estudio__girar svg { animation: girinho 3.2s var(--ease-io) infinite; }
+@keyframes girinho { 50% { transform: rotate(-200deg); } }
+.anim-off .estudio__girar svg, .anim-off .whats-flutuante::before { animation-play-state: paused; }
+
+/* ---------- Ponteiro: inclinação e reflexo ---------- */
+[data-tilt] { transform-style: preserve-3d; }
+[data-tilt]::before { content: ''; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; background: radial-gradient(300px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .22), transparent 55%); opacity: 0; transition: opacity var(--t2) var(--ease); }
+[data-tilt].inclinado::before { opacity: 1; }
+
+/* ---------- Diálogos ---------- */
+.motion-on .gaveta[open] { animation: gaveta-entra 380ms var(--ease); }
+.motion-on .modal[open] { animation: modal-entra 380ms var(--ease); }
+.motion-on .busca[open] { animation: busca-entra 420ms var(--ease); }
+.motion-on dialog[open]::backdrop { animation: aparece 380ms var(--ease); }
+.motion-on .gaveta.fechando { animation: gaveta-sai 260ms var(--ease-io) forwards; }
+.motion-on .modal.fechando { animation: modal-sai 240ms var(--ease-io) forwards; }
+.motion-on .busca.fechando { animation: busca-sai 220ms var(--ease-io) forwards; }
+.motion-on dialog.fechando::backdrop { animation: some 240ms var(--ease-io) forwards; }
+@keyframes gaveta-entra { from { opacity: 0; transform: perspective(1200px) translateX(30%) rotateY(-12deg); } }
+@keyframes gaveta-sai { to { opacity: 0; transform: perspective(1200px) translateX(30%) rotateY(-12deg); } }
+@keyframes modal-entra { from { opacity: 0; transform: perspective(1200px) translateY(30px) rotateX(14deg) scale(.97); } }
+@keyframes modal-sai { to { opacity: 0; transform: perspective(1200px) translateY(20px) rotateX(10deg) scale(.97); } }
+@keyframes busca-entra { from { opacity: 0; transform: translateY(-18px) scale(.97); } }
+@keyframes busca-sai { to { opacity: 0; transform: translateY(-12px) scale(.98); } }
+@keyframes some { to { opacity: 0; } }
+.motion-on .res, .motion-on .busca__populares .chip { animation: sobe 380ms var(--ease) backwards; animation-delay: calc(var(--i, 0) * 32ms); }
+.motion-on .item { animation: sobe 420ms var(--ease) backwards; animation-delay: calc(var(--i, 0) * 40ms); }
+.motion-on .grade .card.novo { animation: sobe 560ms var(--ease) backwards; animation-delay: calc(min(var(--i, 0), 8) * 50ms); }
+
+/* ---------- Pausado: nada fica escondido ---------- */
+.motion-paused *, .motion-paused *::before, .motion-paused *::after { animation: none !important; transition-duration: 0ms !important; }
+.motion-paused [data-reveal], .motion-paused [data-stagger] > *, .motion-paused .letra { opacity: 1 !important; transform: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  html:not(.motion-on) *, html:not(.motion-on) *::before, html:not(.motion-on) *::after { animation: none !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
+}

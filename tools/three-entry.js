@@ -1,0 +1,4 @@
+// Bundle do three.js só com o que o site usa. Gere de novo com esbuild se o código 3D usar classes novas.
+export { ACESFilmicToneMapping,AdditiveBlending,BoxGeometry,BufferAttribute,BufferGeometry,CanvasTexture,Color,CylinderGeometry,DirectionalLight,DoubleSide,Euler,ExtrudeGeometry,Group,HemisphereLight,InstancedMesh,LatheGeometry,Matrix4,Mesh,MeshBasicMaterial,MeshPhysicalMaterial,MeshStandardMaterial,PMREMGenerator,Path,PerspectiveCamera,PlaneGeometry,PointLight,Points,PointsMaterial,Quaternion,SRGBColorSpace,Scene,Shape,ShapeGeometry,SphereGeometry,SplineCurve,Sprite,SpriteMaterial,TorusGeometry,Vector2,Vector3,WebGLRenderer } from 'three';
+export { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
+export { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';

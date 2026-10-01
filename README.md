@@ -43,7 +43,7 @@ node --test tests/*.test.js   # regras de pedido e busca
 | Sons | `js/som.js` |
 | Fotos dos produtos | `assets/produtos/{id}-{n}-400.webp` e `-800.webp` |
 
-Depois de publicar uma mudança, suba o `?v=1` nos `<link>` e `<script>` do `index.html` para furar o cache.
+Depois de publicar uma mudança, suba o `?v=N` nos `<link>` e `<script>` do `index.html` para furar o cache.
 
 O `js/vendor/three.qb.min.js` é o three.js r186 só com as classes usadas, gerado com esbuild a partir de `tools/three-entry.js`. Se o código 3D passar a usar uma classe nova, gere de novo:
 
@@ -53,7 +53,11 @@ npm i three@0.186 && npx esbuild tools/three-entry.js --bundle --format=esm --mi
 
 ## Publicação
 
-O GitHub Pages publica pelo GitHub Actions (`.github/workflows/pages.yml`) a cada push na `main` ou pelo botão "Run workflow". Na primeira vez, ligue em **Settings → Pages → Source: GitHub Actions**.
+O site fica em **https://giordanbohrer3-cpu.github.io/Qbrindes/**, publicado pelo GitHub Pages a partir do branch `gh-pages`.
+
+O workflow `.github/workflows/pages.yml` roda os testes a cada push na `main` e, se passarem, copia a `main` para o `gh-pages`. Edite sempre na `main`, nunca direto no `gh-pages`.
+
+Se algum dia o Pages for desligado, religue em **Settings → Pages → Source: Deploy from a branch → `gh-pages` / `(root)`**.
 
 ## Para a versão final
 

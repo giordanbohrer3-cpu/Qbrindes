@@ -24,19 +24,19 @@ if (!temWebGL()) {
   async function hero() {
     if (feitos.hero || !ligado()) return;
     feitos.hero = true;
-    try { (window.QB3D = window.QB3D || {}).hero = (await import('./hero.js?v=1')).iniciarHero(document.getElementById('inicio')); }
+    try { (window.QB3D = window.QB3D || {}).hero = (await import('./hero.js?v=2')).iniciarHero(document.getElementById('inicio')); }
     catch (e) { falhou('hero', e); }
   }
   async function vitrine() {
     if (feitos.vitrine || !ligado() || !html.classList.contains('pin-on')) return;
     feitos.vitrine = true;
-    try { (window.QB3D = window.QB3D || {}).vitrine = (await import('./vitrine.js?v=1')).iniciarVitrine(document.getElementById('vitrine')); }
+    try { (window.QB3D = window.QB3D || {}).vitrine = (await import('./vitrine.js?v=2')).iniciarVitrine(document.getElementById('vitrine')); }
     catch (e) { falhou('vitrine', e); html.classList.add('sem-3d'); }
   }
   async function estudio() {
     if (feitos.estudio) return;
     feitos.estudio = true;
-    try { (window.QB3D = window.QB3D || {}).estudio = (await import('./estudio.js?v=1')).iniciarEstudio(document.getElementById('estudio')); }
+    try { (window.QB3D = window.QB3D || {}).estudio = (await import('./estudio.js?v=2')).iniciarEstudio(document.getElementById('estudio')); }
     catch (e) { falhou('estúdio', e); }
   }
 
@@ -50,7 +50,7 @@ if (!temWebGL()) {
   }
   const preparar = () => quandoOcioso(() => {
     const l = document.createElement('link');
-    l.rel = 'modulepreload'; l.href = 'js/vendor/three.qb.min.js?v=1';
+    l.rel = 'modulepreload'; l.href = 'js/vendor/three.qb.min.js?v=2';
     document.head.appendChild(l);
     noPrimeiroGesto(hero);
   });

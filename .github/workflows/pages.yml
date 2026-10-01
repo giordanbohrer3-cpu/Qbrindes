@@ -1,35 +1,30 @@
-name: Publicar no GitHub Pages
+name: Testar e publicar
 
+# O Pages publica a partir do branch gh-pages ("Deploy from a branch").
+# A cada push na main, os testes rodam e, se passarem, a main é copiada para gh-pages.
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: pages
+  group: publicar
   cancel-in-progress: true
 
 jobs:
-  publicar:
+  testar-e-publicar:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Testes das regras (pedido e busca)
         run: node --test tests/*.test.js
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: .
-      - id: deploy
-        uses: actions/deploy-pages@v4
+      - name: Publicar a main no gh-pages
+        run: git push --force origin HEAD:gh-pages

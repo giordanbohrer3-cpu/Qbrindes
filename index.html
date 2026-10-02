@@ -137,6 +137,23 @@
 <!-- ===================== HERO ===================== -->
 <section class="hero sec-dark" id="inicio" aria-labelledby="hero-titulo" data-estado="fechado">
   <a class="hero__marca" href="#inicio" aria-label="QBrindes, início"><svg viewBox="-2 -4 362 152" aria-hidden="true"><use href="#logo"/></svg></a>
+  <!-- O texto vem antes do palco no HTML: leitura e Tab começam pelo título, e uma pintura parcial
+       durante o carregamento nunca põe o presente no topo para depois empurrá-lo (no celular ele fica embaixo) -->
+  <div class="hero__conteudo wrap">
+    <p class="eyebrow">Brindes e presentes personalizados</p>
+    <h1 class="hero__titulo" id="hero-titulo"><span class="linha"><span>Presentes que</span></span> <span class="linha"><span>levam o <em>seu nome</em></span></span></h1>
+    <p class="hero__lead">Copos, canetas, chaveiros, kits e facas artesanais com nome, logo ou foto gravados a laser. <span class="so-pc">Veja cada peça por dentro, personalize e peça pelo WhatsApp.</span></p>
+    <div class="hero__acoes">
+      <a class="btn btn--ouro" href="#estudio">Personalizar agora<svg class="seta"><use href="#i-seta"/></svg></a>
+      <a class="btn btn--fantasma so-pc" href="#catalogo">Ver o catálogo</a>
+    </div>
+    <ul class="hero__fatos">
+      <li><strong>83</strong><span>produtos no catálogo</span></li>
+      <li><strong>3</strong><span>técnicas: laser, foto a laser e foto colorida</span></li>
+      <li><strong>R$ 18</strong><span>preço inicial por unidade</span></li>
+    </ul>
+  </div>
+  <p class="sr" id="mimo-aviso" role="status" aria-live="polite"></p>
   <div class="hero__palco" id="palco-hero">
     <div class="hero__flutua">
       <picture>
@@ -183,21 +200,6 @@
         <button class="btn btn--fantasma btn--p" type="button" data-rever><svg><use href="#i-girar"/></svg>Ver de novo</button>
       </div>
     </div>
-  </div>
-  <p class="sr" id="mimo-aviso" role="status" aria-live="polite"></p>
-  <div class="hero__conteudo wrap">
-    <p class="eyebrow">Brindes e presentes personalizados</p>
-    <h1 class="hero__titulo" id="hero-titulo"><span class="linha"><span>Presentes que</span></span> <span class="linha"><span>levam o <em>seu nome</em></span></span></h1>
-    <p class="hero__lead">Copos, canetas, chaveiros, kits e facas artesanais com nome, logo ou foto gravados a laser. <span class="so-pc">Veja cada peça por dentro, personalize e peça pelo WhatsApp.</span></p>
-    <div class="hero__acoes">
-      <a class="btn btn--ouro" href="#estudio">Personalizar agora<svg class="seta"><use href="#i-seta"/></svg></a>
-      <a class="btn btn--fantasma so-pc" href="#catalogo">Ver o catálogo</a>
-    </div>
-    <ul class="hero__fatos">
-      <li><strong>83</strong><span>produtos no catálogo</span></li>
-      <li><strong>3</strong><span>técnicas: laser, foto a laser e foto colorida</span></li>
-      <li><strong>R$ 18</strong><span>preço inicial por unidade</span></li>
-    </ul>
   </div>
 </section>
 
@@ -615,7 +617,6 @@
 <script src="js/video-model.js?v=4" defer></script>
 <script src="js/videos.js?v=4" defer></script>
 <script src="js/som.js?v=4" defer></script>
-<script src="js/confete.js?v=4" defer></script>
 <script type="module" src="js/3d/main.js?v=3"></script>
 </body>
 </html>

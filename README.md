@@ -61,7 +61,7 @@ cupom: { ativo: true, pct: 15, codigo: 'PRESENTE15', chave: 'qb-cupom-v1' }
 - **Primeira compra** não dá para conferir num site estático: quem confere é a loja, no WhatsApp, pelo número ou CPF. O site diz "guardado" e "estimativa com o cupom", nunca "desconto aplicado".
 - **Atenção (CDC, art. 30):** a oferta publicada obriga a loja. Confirme com o cliente o percentual, a validade, o teto e se vale para personalizados antes de publicar. Para encerrar, prefira encurtar a validade a desligar de repente, e honre os códigos que já chegaram.
 
-Como funciona por dentro: `js/mimo.js` (cartão, luzes, voo 3D, guardar o cupom), `js/confete.js` (folhas de ouro em canvas 2D), regras puras e testadas em `js/pedido-model.js` (`cupomVigente`, `totais`, `textoCondicoes`) e `js/video-model.js` (`momentoMimo`). Os nomes "mimo" evitam que bloqueadores de anúncio escondam o cartão.
+Como funciona por dentro: `js/mimo.js` (só o estado do cupom, carregado com a página), `js/mimo-cena.js` (cartão, luzes e voo 3D) e `js/confete.js` (folhas de ouro em canvas 2D), estes dois carregados no primeiro ócio depois do `load`, regras puras e testadas em `js/pedido-model.js` (`cupomVigente`, `totais`, `textoCondicoes`) e `js/video-model.js` (`momentoMimo`). Os nomes "mimo" evitam que bloqueadores de anúncio escondam o cartão.
 
 ## Ferramentas (não vão para o site)
 

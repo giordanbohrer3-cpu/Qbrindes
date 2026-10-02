@@ -190,6 +190,7 @@
   if (C.config) $$('[data-cupom-pct]').forEach((el) => { el.textContent = C.config.pct + '%'; });
   $('#pedido-aplicar').addEventListener('click', () => {
     C.guardar();
+    $('#pedido-cupom').focus({ preventScroll: true }); // o botão some; o leitor de tela lê a linha nova
     toast('Cupom <b>' + C.config.codigo + '</b> guardado: ' + C.config.pct + '% na primeira compra');
     som('adicionar');
   });
@@ -435,7 +436,7 @@
     campo.setAttribute('aria-activedescendant', sel >= 0 ? 'res-' + sel : '');
     vazio.hidden = resultados.length > 0;
     if (!resultados.length) {
-      vazio.innerHTML = '<p>Nada encontrado para <b>"' + esc(q) + '"</b>. A gente pode ter fora do catálogo.</p><a class="btn btn--whats btn--p" target="_blank" rel="noopener" href="' + P.linkWhats(loja.whatsapp, P.mensagemBusca(q, { nome: $('#ped-nome').value })) + '">' + icone('i-whats') + 'Perguntar no WhatsApp</a>';
+      vazio.innerHTML = '<p>Nada encontrado para <b>"' + esc(q) + '"</b>. A gente pode ter fora do catálogo.</p><a class="btn btn--whats btn--p" target="_blank" rel="noopener" href="' + P.linkWhats(loja.whatsapp, P.mensagemBusca(q, { nome: $('#ped-nome').value, cupom: cupomGanho() })) + '">' + icone('i-whats') + 'Perguntar no WhatsApp</a>';
     }
     const linha = $('.busca__linha');
     linha.classList.remove('correr'); void linha.offsetWidth; linha.classList.add('correr');

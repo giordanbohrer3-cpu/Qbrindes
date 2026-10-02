@@ -44,22 +44,29 @@
     return c;
   }
 
-  /* o: { pai, area: {x, y, w, h} (px no pai), boca: {x, y}, larguraBoca, altura (px de referência),
+  /* o: { pai, area: {x, y, w, h} (px no pai), boca: {x, y}, larguraBoca, altura (px de referência), escala,
           quantidade, poeira, zAtras, zFrente, esmaecerX (px: folhas somem à esquerda disso),
           esmaecerFrenteY (px: folhas da frente somem acima disso), semente } */
-  function estourar(o) {
-    parar();
-    cfg = o;
-    semente = o.semente || 11;
+  // Cria, posiciona e dimensiona os canvases antes da rajada (escondidos), fora do quadro em que ela começa
+  function preparar(o) {
     dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     for (const [nome, z] of [['atras', o.zAtras], ['frente', o.zFrente]]) {
       const c = canvas(nome, o.pai, z);
       c.style.left = o.area.x + 'px'; c.style.top = o.area.y + 'px';
       c.style.width = o.area.w + 'px'; c.style.height = o.area.h + 'px';
-      c.width = Math.round(o.area.w * dpr); c.height = Math.round(o.area.h * dpr);
-      c.hidden = false;
+      const w = Math.round(o.area.w * dpr), h = Math.round(o.area.h * dpr);
+      if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+      c.getContext('2d').clearRect(0, 0, w, h); // inicia o contexto aqui, não no primeiro quadro da rajada
     }
-    const H = o.altura, F = o.larguraBoca;
+  }
+
+  function estourar(o) {
+    parar();
+    cfg = o;
+    semente = o.semente || 11;
+    preparar(o);
+    for (const c of Object.values(planos)) c.hidden = false;
+    const H = o.altura, F = o.larguraBoca, E = o.escala || 1; // E: tamanho das folhas na escala da cena
     const bx = o.boca.x - o.area.x, by = o.boca.y - o.area.y; // origem no espaço do canvas
     for (let i = 0; i < o.quantidade; i++) {
       const r = acaso();
@@ -75,12 +82,12 @@
         giro: entre(0, Math.PI * 2), vGiro: entre(-4, 4),
         vira: entre(0, Math.PI * 2), vVira: (forma === 'lasca' ? entre(4, 9) : entre(7, 15)) * (acaso() < 0.5 ? -1 : 1),
         fase: entre(0, Math.PI * 2), w: entre(2.5, 5) * Math.PI, // ω do balanço
-        a: entre(4, 14) * z, espera: entre(0, 0.14), vida: 0, max: entre(2.6, 3.4)
+        a: entre(4, 14) * z * E, espera: entre(0, 0.14), vida: 0, max: entre(2.6, 3.4)
       };
-      if (forma === 'fita') { p.lw = entre(2.6, 3.6) * z; p.lh = entre(8, 13) * z; }
-      else if (forma === 'lantejoula') { p.lw = entre(1.8, 2.6) * z; }
+      if (forma === 'fita') { p.lw = entre(2.6, 3.6) * z * E; p.lh = entre(8, 13) * z * E; }
+      else if (forma === 'lantejoula') { p.lw = entre(1.8, 2.6) * z * E; }
       else { // lasca: polígono irregular de 5 vértices, montado uma vez
-        const raio = entre(3, 6) * z, path = new Path2D();
+        const raio = entre(3, 6) * z * E, path = new Path2D();
         for (let k = 0; k < 5; k++) {
           const a = (k / 5) * Math.PI * 2 + entre(-0.35, 0.35), rr = raio * entre(0.6, 1.1);
           if (k) path.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); else path.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
@@ -163,10 +170,16 @@
     if (aoFim) { const f = aoFim; aoFim = null; f(); }
   }
 
+  // parar: interrompe uma rajada em curso; liberar: também devolve canvases preparados e não usados
   function parar() {
+    if (!raf) return;
+    cancelAnimationFrame(raf);
+    terminar();
+  }
+  function liberar() {
     if (raf) cancelAnimationFrame(raf);
     terminar();
   }
 
-  window.QBConfete = { estourar, parar, ativo: () => !!raf };
+  window.QBConfete = { preparar, estourar, parar, liberar, ativo: () => !!raf };
 })();

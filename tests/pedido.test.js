@@ -116,3 +116,9 @@ test('condições do cupom geradas da config (validade e teto opcionais)', () =>
   assert.equal(P.dataBR('2026-12-31'), '31/12/2026');
   assert.equal(P.dataBR('31/12'), '');
 });
+
+test('busca sem resultado também leva o cupom ao WhatsApp', () => {
+  const cupom = P.cupomVigente({ ativo: true, codigo: 'PRESENTE15', pct: 15 });
+  assert.match(P.mensagemBusca('abridor', { cupom }), /Vocês trabalham com isso\? Cupom de primeira compra: PRESENTE15/);
+  assert.doesNotMatch(P.mensagemBusca('abridor', {}), /PRESENTE15/);
+});

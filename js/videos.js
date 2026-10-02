@@ -115,8 +115,16 @@
       });
       if (p && p.catch) p.catch(() => { if (estado !== 'tocando') definir('fechado'); }); // autoplay bloqueado (ex.: modo de economia do iPhone): o botão continua
     }
-    video.addEventListener('ended', () => { definir('fim'); laser(false); presente('revelar'); });
-    video.addEventListener('error', () => { if (estado === 'tocando') { mostrarFinal(); definir('fim'); presente('revelar'); } });
+    // Chegada ao fim (ended, erro ou efeitos pausados). Se a tela cruzou os 900 px durante o vídeo
+    // (celular girado), troca já para a variante certa: o pôster final e o cartão usam o mesmo enquadramento.
+    function chegouAoFim(comFinal) {
+      definir('fim');
+      if (M.varianteHero(window.innerWidth) !== variante) escolher(); // com estado 'fim', escolher() mostra o final novo
+      else if (comFinal) mostrarFinal();
+      presente('revelar');
+    }
+    video.addEventListener('ended', () => { laser(false); chegouAoFim(false); });
+    video.addEventListener('error', () => { if (estado === 'tocando') chegouAoFim(true); });
 
     $('[data-abrir-presente]', hero).addEventListener('click', tocar);
     $('[data-rever]', hero).addEventListener('click', (e) => { final.classList.remove('on'); presente('fechar'); definir('fechado'); tocar(e); });
@@ -130,7 +138,7 @@
     let heroVisivel = false;
     new IntersectionObserver(([en]) => { heroVisivel = en.isIntersecting; agendar(heroVisivel); }, { threshold: 0.6 }).observe($('#palco-hero'));
     document.addEventListener('visibilitychange', () => agendar(heroVisivel));
-    document.addEventListener('qb:motion', (e) => { if (!e.detail && estado === 'tocando') { video.pause(); laser(false); mostrarFinal(); definir('fim'); presente('revelar'); } agendar(heroVisivel); });
+    document.addEventListener('qb:motion', (e) => { if (!e.detail && estado === 'tocando') { video.pause(); laser(false); chegouAoFim(true); } agendar(heroVisivel); });
     window.QBHero = { tocar, estado: () => estado, variante: () => variante };
   }
 

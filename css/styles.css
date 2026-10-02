@@ -830,7 +830,7 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
   .whats-flutuante { display: none; }
   .so-pc { display: none !important; }
 
-  .hero { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding-bottom: 28px; }
+  .hero { display: flex; flex-direction: column; align-items: stretch; min-height: 0; padding-bottom: 84px; }
   .hero__marca { display: block; position: relative; z-index: 2; width: max-content; padding: calc(16px + env(safe-area-inset-top)) var(--gutter) 0; color: #fff; --logo-b: #fff; --logo-q: url(#qg-logo-claro); }
   .hero__marca svg { height: 30px; width: auto; }
   .hero__conteudo { order: 1; padding: 22px var(--gutter) 0; }
@@ -846,7 +846,8 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
   }
   .hero__poster, .hero__video, .hero__final { object-position: 50% 50%; }
   .hero__palco::after { background: radial-gradient(36% 30% at 50% 60%, rgba(255, 196, 110, .1), transparent 70%); }
-  .hero__acao { left: 50%; bottom: 5%; }
+  .hero__acao { left: 50%; bottom: -62px; } /* abaixo do palco: o cartão do desconto assenta no pé da cena sem cortar a caneca */
+  @media (max-width: 340px) { .hero__depois { gap: 8px; } .hero__depois .btn { padding: 0 12px; font-size: 13.5px; } } /* iPhone SE de 320 px */
   .hero__depois .btn { min-height: 44px; }
 
   .faixa { height: 46px; }
@@ -919,28 +920,32 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
    Mimo — o cartão do desconto de primeira compra que sai do presente (js/mimo.js)
    Repouso aqui; a saída é WAAPI (só transform e opacity). Posições vêm do JS em px do palco.
    ========================================================= */
-.mimo { position: absolute; inset: 0; z-index: 3; pointer-events: none; --cw: 330px; --cl: 0px; --cb: 0px; --ch: 220px; --bx: 72%; --by: 57%; --face: 300px; }
+/* Luzes em mistura normal (gradientes quentes por cima do vídeo): quase igual a screen, sem custo de composição
+   a cada quadro e sem os problemas do Safari com mix-blend-mode sobre <video> */
+.mimo { position: absolute; inset: 0; pointer-events: none; --cw: 330px; --cl: 0px; --cb: 0px; --ch: 220px; --bx: 72%; --by: 57%; --face: 300px; }
 .mimo[hidden] { display: none; }
 .mimo--pre { visibility: hidden; } /* montado antes da revelação, ainda invisível */
 /* Luzes da cena: só gradientes pintados uma vez; anima-se a opacidade */
 .mimo__luzes i { position: absolute; display: block; pointer-events: none; }
 .mimo__sala { left: var(--bx); top: var(--by); width: calc(var(--face) * 4.2); height: calc(var(--face) * 3.2); translate: -50% -50%; opacity: .8;
   background: radial-gradient(closest-side, rgba(233, 199, 123, .14), rgba(233, 199, 123, .06) 45%, transparent); }
-.mimo__cone { left: var(--bx); top: calc(var(--by) - var(--face) * 1.9); width: calc(var(--face) * 1.3); height: calc(var(--face) * 1.9); translate: -50% 0; opacity: .4; mix-blend-mode: screen;
-  background: radial-gradient(50% 100% at 50% 100%, rgba(255, 214, 150, .42), rgba(255, 190, 110, .12) 45%, transparent 75%); }
-.mimo__boca { left: var(--bx); top: var(--by); width: calc(var(--face) * 1.7); height: calc(var(--face) * .62); translate: -50% -50%; opacity: .45; mix-blend-mode: screen;
-  background: radial-gradient(closest-side, rgba(255, 236, 190, .95), rgba(255, 186, 64, .55) 30%, rgba(255, 150, 40, .16) 62%, transparent); }
+.mimo__cone { left: var(--bx); top: calc(var(--by) - var(--face) * 1.9); width: calc(var(--face) * 1.3); height: calc(var(--face) * 1.9); translate: -50% 0; opacity: .4;
+  background: radial-gradient(50% 100% at 50% 100%, rgba(255, 214, 150, .55), rgba(255, 190, 110, .16) 45%, transparent 75%); }
+.mimo__boca { left: var(--bx); top: var(--by); width: calc(var(--face) * 1.7); height: calc(var(--face) * .62); translate: -50% -50%; opacity: .45;
+  background: radial-gradient(closest-side, rgba(255, 236, 190, 1), rgba(255, 186, 64, .68) 30%, rgba(255, 150, 40, .2) 62%, transparent); }
 .mimo__oclusao { left: calc(var(--cl) - 30px); bottom: calc(var(--cb) - 25px); width: calc(var(--cw) + 60px); height: calc(var(--ch) + 50px);
   background: radial-gradient(closest-side, rgba(4, 2, 24, .38) 70%, transparent); }
-.mimo__rebate { left: calc(var(--cl) + var(--cw) / 2); bottom: calc(var(--cb) + var(--ch) * .32); width: calc(var(--cw) * 1.55); height: var(--cw); translate: -50% 50%; mix-blend-mode: screen;
+.mimo__rebate { left: calc(var(--cl) + var(--cw) / 2); bottom: calc(var(--cb) + var(--ch) * .32); width: calc(var(--cw) * 1.55); height: var(--cw); translate: -50% 50%;
   background: radial-gradient(closest-side, rgba(255, 241, 215, .16), rgba(255, 241, 215, .05) 55%, transparent); }
 .mimo__sombra { left: calc(var(--cl) - var(--cw) * .03); bottom: calc(var(--cb) - 6px - max(7px, var(--cw) * .035)); width: calc(var(--cw) * 1.06); height: max(14px, calc(var(--cw) * .07));
   background: radial-gradient(closest-side, rgba(4, 2, 24, .78), rgba(4, 2, 24, .32) 55%, transparent); }
 
 /* Cartão: cena (recorte do lábio na saída) › voo (trajetória) › inclina (ponteiro) › giro (virada) › faces */
-.mimo__cena { position: absolute; left: var(--cl); bottom: var(--cb); width: var(--cw); pointer-events: auto; }
+.mimo__cena { position: absolute; z-index: 3; left: var(--cl); bottom: var(--cb); width: var(--cw); pointer-events: auto; }
 .mimo__voo { perspective: 1100px; }
 .mimo__inclina, .mimo__giro { transform-style: preserve-3d; }
+@property --tx { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@property --ty { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
 .mimo--inclinado .mimo__inclina { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); transition: transform 120ms linear; }
 .mimo__inclina { transition: transform 600ms var(--ease); }
 .mimo__giro { display: grid; transition: transform 760ms var(--ease-io); }
@@ -953,7 +958,7 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
 /* Frente: papel algodão marfim com grão, borda dourada (clara em cima, onde a luz da caixa bate) */
 .mimo__frente {
   container-type: inline-size;
-  display: grid; gap: 10px; padding: 16px 18px 14px; color: #120F2E; text-align: left;
+  display: grid; align-content: center; gap: 10px; padding: 16px 18px 14px; color: #120F2E; text-align: left;
   border: 1.5px solid transparent;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .33 0 0 0 0 .18 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") padding-box,
@@ -984,17 +989,15 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
 .mimo__linhas { display: grid; gap: 3px; padding-bottom: 4px; }
 .mimo__de { font: italic 600 21px/1 var(--f-display); color: #120F2E; }
 .mimo__compra { font: 500 13px/1.2 var(--f-texto); color: #55516B; }
-.mimo__codigo { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border: 1px dashed #B8913F; border-radius: 10px; background: rgba(138, 88, 0, .05); }
+.mimo__codigo { display: flex; align-items: center; gap: 8px; padding: 6px 6px 6px 12px; border: 1px dashed #B8913F; border-radius: 10px; background: rgba(138, 88, 0, .05); }
 .mimo__rotulo { font: 600 10px/1 var(--f-texto); letter-spacing: .2em; text-transform: uppercase; color: #8A5800; }
 .mimo__cod { flex: 1; font: 700 15px/1 var(--f-texto); letter-spacing: .12em; color: #120F2E; user-select: all; }
-.mimo__copiar { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #1408B8; color: #1408B8; font: 600 13px/1 var(--f-texto); transition: background-color var(--t2) var(--ease); }
+.mimo__copiar { flex: none; position: relative; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #1408B8; color: #1408B8; font: 600 13px/1 var(--f-texto); transition: background-color var(--t2) var(--ease); }
 .mimo__copiar::after { content: ''; position: absolute; inset: -5px; } /* alvo de 44 px */
 .mimo__copiar svg { width: 15px; height: 15px; }
 .mimo__copiar:hover { background: rgba(20, 8, 184, .07); }
 .mimo__guardado { display: flex; align-items: center; gap: 6px; font: 600 12.5px/1.3 var(--f-texto); color: #1408B8; }
 .mimo__guardado svg { width: 14px; height: 14px; color: #A06A16; flex: none; }
-.so-cel { display: none; }
-@media (max-width: 900px) { .so-cel { display: inline; } }
 .mimo__rodape { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 10px; }
 .mimo__validade { margin-top: -6px; font: 400 12px/1.4 var(--f-texto); color: #55516B; }
 .mimo__validade[hidden] { display: none; }
@@ -1012,7 +1015,8 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
     radial-gradient(130% 100% at 50% 0%, #2A1BFF 0%, #1408B8 40%, #0E0880 100%) padding-box,
     linear-gradient(180deg, #FFE9B8 0%, #E9C77B 22%, #C9922E 60%, #8A5800 100%) border-box; }
 .mimo__selo-q { width: 56px; height: auto; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .35)); transition: opacity 300ms var(--ease); }
-.mimo__condicoes { position: absolute; inset: 0; display: grid; align-content: center; gap: 8px; padding: 18px 20px; visibility: hidden; opacity: 0; transition: opacity 300ms var(--ease) 200ms, visibility 0s 500ms; }
+.mimo__selo-q, .mimo__condicoes { grid-area: 1 / 1; }
+.mimo__condicoes { justify-self: stretch; display: grid; align-content: center; gap: 8px; padding: 2px; visibility: hidden; opacity: 0; transition: opacity 300ms var(--ease) 200ms, visibility 0s 500ms; }
 .mimo--verso .mimo__condicoes { visibility: visible; opacity: 1; transition: opacity 300ms var(--ease) 300ms; }
 .mimo--verso .mimo__selo-q { opacity: .12; }
 .mimo__cond-titulo { font: 700 16px/1.2 var(--f-display); color: #FFF4DC; }
@@ -1037,9 +1041,13 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
   .mimo__copiar { height: 34px; padding: 0 12px; }
   .mimo__fechar { top: 4px; right: 4px; }
   .mimo__guardado { font-size: 12px; }
-  .hero[data-mimo] .hero__acao { bottom: -12px; } /* usa o respiro de 28 px do hero: o cartão desce e o "Seu nome" do copo fica à vista */
+  .mimo__verso { padding: 12px 16px; }
+  .mimo__condicoes { gap: 5px; padding: 0; }
+  .mimo__cond-texto { font-size: 11.5px; line-height: 1.4; }
 }
-@container (max-width: 250px) { .mimo__rotulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+.mimo__curto { display: none; }
+@container (max-width: 300px) { .mimo__rotulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+@container (max-width: 284px) { .mimo__longo { display: none; } .mimo__curto { display: inline; } .mimo__selo { letter-spacing: .16em; } .mimo__selo::before { display: none; } }
 
 @media (forced-colors: active) {
   .mimo__num { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; filter: none; }

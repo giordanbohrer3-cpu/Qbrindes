@@ -173,7 +173,8 @@
 
   function mensagemBusca(termo, opcoes) {
     const o = opcoes || {};
-    return abertura(o.nome, o.data) + 'Procurei por "' + String(termo || '').trim() + '" no site e não encontrei. Vocês trabalham com isso?';
+    return abertura(o.nome, o.data) + 'Procurei por "' + String(termo || '').trim() + '" no site e não encontrei. Vocês trabalham com isso?' +
+      (o.cupom && o.cupom.codigo ? ' ' + linhaCupom(o.cupom) : '');
   }
 
   function linkWhats(numero, texto) {

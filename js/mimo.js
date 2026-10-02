@@ -23,17 +23,23 @@
     try { localStorage.setItem(CFG.chave, JSON.stringify(s)); } catch (e) { /* ok */ }
     return s;
   }
-  function guardar() {
+  // adiar: na revelação, o resto do site (gaveta, mensagens, links dos 83 produtos) se atualiza no ócio,
+  // fora do quadro em que o cartão aparece; pela gaveta é na hora (o foco vai para a linha nova)
+  function guardar(adiar) {
     if (!vigente) return;
     const novo = !ler();
     gravar({});
-    if (novo) document.dispatchEvent(new CustomEvent('qb:cupom', { detail: { estado: 'guardado' } }));
+    if (!novo) return;
+    const avisar = () => document.dispatchEvent(new CustomEvent('qb:cupom', { detail: { estado: 'guardado' } }));
+    if (!adiar) avisar();
+    else if ('requestIdleCallback' in window) requestIdleCallback(avisar, { timeout: 2500 });
+    else setTimeout(avisar, 700);
   }
   window.QBCupom = {
     config: vigente,                                   // null quando desligado ou vencido
     guardado: () => !!(vigente && ler()),
     vigente: () => (vigente && ler() ? vigente : null),
-    guardar
+    guardar: () => guardar(false)
   };
   if (!vigente) return;
 
@@ -47,7 +53,7 @@
     if (!hero || !palco || !mimo) return;
     const giro = $('.mimo__giro', mimo), voo = $('.mimo__voo', mimo), cena = $('.mimo__cena', mimo), inclina = $('.mimo__inclina', mimo);
     const frente = $('.mimo__frente', mimo), verso = $('.mimo__verso', mimo);
-    const num = $('[data-mimo-pct]', mimo), aviso = $('#mimo-aviso');
+    const num = $('[data-mimo-pct]', mimo), aviso = $('#mimo-aviso'), brilho = $('.mimo__frente .mimo__brilho', mimo);
     const movel = matchMedia('(max-width: 900px)');
     const ponteiroFino = matchMedia('(hover: hover) and (pointer: fine)');
     const ligado = () => html.classList.contains('motion-on');
@@ -98,7 +104,10 @@
       if (movel.matches) {
         cw = Math.min(Math.max(288, W * 0.92), 340, window.innerWidth - 32);
         cx = W / 2;
-        base = topoBotoes - 10;
+        // Assenta no pé da cena quando o topo fica abaixo da caneca (v 0,55); em palco baixo (iPhone SE),
+        // sobe e cobre a faixa inteira da caneca e do "Seu nome", sem cortar nada pela metade
+        const hc = cena.offsetHeight;
+        base = H - 6 - hc >= Y(0.55) ? H - 6 : Math.min(H - 6, Y(0.395) + hc);
       } else {
         cw = Math.min(Math.max(300, face * 1.12), 380);
         // Nunca encosta no texto do topo
@@ -118,12 +127,13 @@
     }
 
     /* ---------- Cena ---------- */
-    let animacoes = [], timers = [], visivel = false, anunciado = false, aberto = false;
+    let animacoes = [], timers = [], visivel = false, anunciado = false, aberto = false, saida = null;
     new IntersectionObserver(([en]) => { visivel = en.intersectionRatio > 0.35; }, { threshold: [0, 0.35, 0.6] }).observe(palco);
     new ResizeObserver(() => { if (aberto) requestAnimationFrame(medir); }).observe(palco);
     movel.addEventListener('change', () => { if (aberto) requestAnimationFrame(medir); });
 
     function limpar() {
+      if (saida) { saida.forEach((a) => { a.onfinish = null; a.cancel(); }); saida = null; } // fade de um fechar anterior
       animacoes.forEach((a) => a.cancel()); animacoes = [];
       timers.forEach(clearTimeout); timers = [];
       if (window.QBConfete) window.QBConfete.parar();
@@ -132,17 +142,18 @@
     const depois = (ms, fn) => timers.push(setTimeout(fn, ms));
     const anim = (el, kf, op) => { const a = el.animate(kf, Object.assign({ fill: 'backwards' }, op)); animacoes.push(a); return a; };
 
-    function anunciar() {
+    function anunciar(curto) {
       if (anunciado) return;
       anunciado = true;
-      aviso.textContent = 'Você ganhou ' + pct + ' de desconto na primeira compra. O código ' + vigente.codigo + ' já está guardado no seu pedido.';
+      aviso.textContent = curto ? 'O código ' + vigente.codigo + ' já está guardado no seu pedido.'
+        : 'Você ganhou ' + pct + ' de desconto na primeira compra. O código ' + vigente.codigo + ' já está guardado no seu pedido.';
     }
 
     function revelar(d) {
       limpar();
       virar(false, true);
       const jaFesta = !!(ler() && ler().festa);
-      guardar();
+      guardar(true);
       const animar = d.movimento && ligado() && visivel;
       const festa = animar && (d.gesto || !jaFesta);
       $('[data-mimo-selo]', mimo).textContent = jaFesta && !d.gesto ? 'Seu presente continua aqui' : 'Presente de boas-vindas';
@@ -151,6 +162,7 @@
       medir();
       if (!animar) { pousou(d, false); return; }
       if (festa) gravar({ festa: new Date().toISOString().slice(0, 10) });
+      else if (window.QBConfete) window.QBConfete.liberar(); // canvases preparados à toa
       coreografia(d, festa);
     }
 
@@ -204,28 +216,36 @@
 
     function folhas(gesto) {
       if (!window.QBConfete || !ligado()) return;
+      window.QBConfete.estourar(opcoesFolhas(gesto));
+      if (gesto) depois(10, () => som('brilho'));
+    }
+    function opcoesFolhas(gesto) {
       const g = geo, hr = hero.getBoundingClientRect();
-      const fraco = (navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 4;
+      // Só no Chromium os dois sinais são reais (no WebKit hardwareConcurrency é travado em 4 e não há deviceMemory)
+      const fraco = 'deviceMemory' in navigator && (navigator.deviceMemory <= 4 || navigator.hardwareConcurrency <= 4);
       const k = fraco ? 0.6 : 1;
       const boca = { x: g.palcoEsq + g.bx, y: g.palcoTopo + g.labio };
       // Área: no PC, do fim do texto até a direita; no celular, o palco e um pouco acima dele (as folhas passam por trás do título)
       const area = movel.matches
         ? { x: 0, y: Math.max(0, g.palcoTopo - 0.45 * g.H), w: hr.width, h: g.palcoTopo + g.H - Math.max(0, g.palcoTopo - 0.45 * g.H) }
         : { x: Math.max(0, (g.texto || 0) - 40), y: 0, w: hr.width - Math.max(0, (g.texto || 0) - 40), h: hr.height };
-      window.QBConfete.estourar({
+      return {
         pai: hero, area, boca, larguraBoca: g.face, altura: g.H,
-        quantidade: Math.round((movel.matches ? 52 : 84) * k), poeira: Math.round((movel.matches ? 12 : 18) * k),
+        quantidade: Math.round((movel.matches ? 36 : 84) * k), poeira: Math.round((movel.matches ? 10 : 18) * k),
+        escala: Math.min(1, Math.max(0.55, g.face / 260)),
         zAtras: 1, zFrente: 4, esmaecerX: movel.matches ? null : (g.texto || 0) + 16,
         esmaecerFrenteY: movel.matches ? g.palcoTopo : null, semente: gesto ? 23 : 11
-      });
-      if (gesto) depois(10, () => som('brilho'));
+      };
     }
 
     function pousou(d, animado) {
       hero.dataset.mimo = 'on';
-      // Teclado: o botão "Abrir o presente" sumiu; o foco vai para o cartão em vez de cair no body
-      if (d.teclado && (document.activeElement === document.body || !document.activeElement || !hero.contains(document.activeElement))) giro.focus({ preventScroll: true });
-      if (visivel) depois(animado ? 200 : 0, anunciar);
+      // Teclado: o foco estava no "Abrir o presente", que some no fim; vai para o cartão em vez de cair no body.
+      // Quem já levou o foco para outro lugar não é puxado de volta.
+      const a = document.activeElement;
+      const focou = !!d.teclado && (!a || a === document.body || a.matches('[data-abrir-presente]'));
+      if (focou) giro.focus({ preventScroll: true });
+      if (visivel) depois(animado ? 200 : 0, () => anunciar(focou));
     }
 
     function fechar(rapido) {
@@ -236,8 +256,10 @@
       if (rapido || !ligado()) fim();
       else {
         const a = cena.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(10px) scale(.985)' }], { duration: 260, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
-        a.onfinish = () => { a.cancel(); fim(); };
-        $('.mimo__luzes', mimo).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' }).onfinish = function () { this.cancel(); };
+        const l = $('.mimo__luzes', mimo).animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, fill: 'forwards' });
+        saida = [a, l];
+        l.onfinish = () => l.cancel();
+        a.onfinish = () => { saida = null; a.cancel(); l.cancel(); fim(); };
       }
       if (dentro) { const alvo = $('.hero__depois .btn', hero); if (alvo) alvo.focus({ preventScroll: true }); }
     }
@@ -264,16 +286,19 @@
     const btnCopiar = $('[data-mimo-copiar]', mimo);
     btnCopiar.addEventListener('click', async () => {
       const cod = vigente.codigo;
-      try {
-        await navigator.clipboard.writeText(cod);
+      const ok = () => {
         toast('Código <b>' + cod + '</b> copiado');
         const rot = $('span', btnCopiar);
         rot.textContent = 'Copiado'; btnCopiar.setAttribute('aria-label', 'Código copiado');
         setTimeout(() => { rot.textContent = 'Copiar'; btnCopiar.setAttribute('aria-label', 'Copiar o código ' + cod); }, 2000);
-      } catch (err) {
+      };
+      try { await navigator.clipboard.writeText(cod); ok(); }
+      catch (err) {
         const sel = getSelection(), r = document.createRange();
         r.selectNodeContents($('[data-mimo-cod]', mimo)); sel.removeAllRanges(); sel.addRange(r);
-        toast('Selecione o código <b>' + cod + '</b> para copiar');
+        let copiou = false;
+        try { copiou = document.execCommand('copy'); } catch (e) { /* ok */ }
+        if (copiou) ok(); else toast('Código <b>' + cod + '</b> selecionado: use Copiar no menu ou Ctrl+C');
       }
       som('clique');
     });
@@ -284,11 +309,10 @@
       rafInc = 0;
       if (!alvo) { mimo.classList.remove('mimo--inclinado'); return; }
       mimo.classList.add('mimo--inclinado');
-      const st = inclina.style;
-      st.setProperty('--tx', (-alvo.ny * 7).toFixed(2) + 'deg');
-      st.setProperty('--ty', (alvo.nx * 9).toFixed(2) + 'deg');
-      st.setProperty('--gx', (50 + alvo.nx * 80).toFixed(1) + '%');
-      st.setProperty('--gy', (alvo.ny * 80).toFixed(1) + '%');
+      inclina.style.setProperty('--tx', (-alvo.ny * 7).toFixed(2) + 'deg');
+      inclina.style.setProperty('--ty', (alvo.nx * 9).toFixed(2) + 'deg');
+      brilho.style.setProperty('--gx', (50 + alvo.nx * 80).toFixed(1) + '%');
+      brilho.style.setProperty('--gy', (alvo.ny * 80).toFixed(1) + '%');
       num.style.backgroundPositionX = (50 - alvo.nx * 70).toFixed(1) + '%, 0';
     }
     cena.addEventListener('pointermove', (e) => {
@@ -306,8 +330,15 @@
       else if (d.fase === 'fechar') fechar(false);
       else if (d.fase === 'tocando') {
         if (aberto) fechar(true);
-        // Monta o cartão invisível agora: estilo e layout saem do quadro da revelação (~4,7 s depois)
-        mimo.classList.add('mimo--pre'); mimo.hidden = false; medir();
+        // No primeiro ócio do vídeo, monta o cartão invisível (estilo e layout saem do quadro da revelação, ~4,7 s
+        // depois) e os canvases do confete, se houver festa (gesto ou primeira vez): a rajada não aloca nada na hora
+        const preparar = () => {
+          if (aberto) return;
+          mimo.classList.add('mimo--pre'); mimo.hidden = false; medir();
+          const jaFesta = !!(ler() && ler().festa);
+          if (window.QBConfete && ligado() && (d.gesto || !jaFesta)) window.QBConfete.preparar(opcoesFolhas(d.gesto));
+        };
+        if ('requestIdleCallback' in window) requestIdleCallback(preparar, { timeout: 1500 }); else setTimeout(preparar, 400);
         // A manuscrita precisa estar pronta quando o cartão sair (~5 s depois)
         if (document.fonts && document.fonts.load) document.fonts.load('400 32px "Great Vibes"').catch(() => {});
       }
@@ -315,7 +346,7 @@
     document.addEventListener('qb:motion', (e) => {
       if (e.detail) return;
       animacoes.forEach((a) => a.finish()); // pausar efeitos no meio do voo: vai direto ao pouso
-      if (window.QBConfete) window.QBConfete.parar();
+      if (window.QBConfete) window.QBConfete.liberar();
       mimo.classList.remove('mimo--voando', 'mimo--inclinado');
       if (aberto && hero.dataset.mimo !== 'on') hero.dataset.mimo = 'on';
     });

@@ -24,23 +24,19 @@
     try { localStorage.setItem(CFG.chave, JSON.stringify(s)); } catch (e) { /* ok */ }
     return s;
   }
-  // adiar: na revelação, o resto do site (gaveta, mensagens, links dos 83 produtos) se atualiza no ócio,
-  // fora do quadro em que o cartão aparece; pela gaveta é na hora (o foco vai para a linha nova)
-  function guardar(adiar) {
+  // Avisa o resto do site na hora: a partir daqui toda mensagem do WhatsApp já leva o cupom
+  // (o app.js atualiza na hora os links leves e deixa só os 83 do catálogo para o ócio)
+  function guardar() {
     if (!vigente) return;
     const novo = !ler();
     gravar({});
-    if (!novo) return;
-    const avisar = () => document.dispatchEvent(new CustomEvent('qb:cupom', { detail: { estado: 'guardado' } }));
-    if (!adiar) avisar();
-    else if ('requestIdleCallback' in window) requestIdleCallback(avisar, { timeout: 2500 });
-    else setTimeout(avisar, 700);
+    if (novo) document.dispatchEvent(new CustomEvent('qb:cupom', { detail: { estado: 'guardado' } }));
   }
   window.QBCupom = {
     config: vigente,                                   // null quando desligado ou vencido
     guardado: () => !!(vigente && ler()),
     vigente: () => (vigente && ler() ? vigente : null),
-    guardar: () => guardar(false),
+    guardar,
     _cena: { ler, gravar, guardar }, // usado por js/mimo-cena.js
     pendente: null                    // evento do presente que chegou antes da cena
   };

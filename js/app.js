@@ -194,12 +194,15 @@
     toast('Cupom <b>' + C.config.codigo + '</b> guardado: ' + C.config.pct + '% na primeira compra');
     som('adicionar');
   });
+  // Links leves (pedido, estúdio, contato) na hora; os 83 do catálogo no ócio, e cada um é refeito no clique
+  const linkProduto = (card) => {
+    const p = porId[card.dataset.id], a = $('.btn-wpp', card);
+    if (p && a) a.href = P.linkWhats(loja.whatsapp, P.mensagemProduto(p, { cupom: cupomGanho() }));
+  };
   document.addEventListener('qb:cupom', () => {
     renderPedido(); atualizarWhatsContato(); atualizarResumo();
-    $$('.card').forEach((card) => {
-      const p = porId[card.dataset.id], a = $('.btn-wpp', card);
-      if (p && a) a.href = P.linkWhats(loja.whatsapp, P.mensagemProduto(p, { cupom: cupomGanho() }));
-    });
+    const cartoes = () => $$('.card').forEach(linkProduto);
+    if ('requestIdleCallback' in window) requestIdleCallback(cartoes, { timeout: 2500 }); else setTimeout(cartoes, 300);
   });
 
   try {
@@ -652,6 +655,8 @@
 
   /* ---------- Cliques delegados ---------- */
   document.addEventListener('click', (e) => {
+    const wpp = e.target.closest('.card .btn-wpp');
+    if (wpp) { linkProduto(wpp.closest('.card')); return; } // segue o link já com o cupom, se houver
     const add = e.target.closest('[data-add]');
     if (add) {
       const p = porId[add.dataset.add];

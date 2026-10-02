@@ -125,7 +125,7 @@
       limpar();
       virar(false, true);
       const jaFesta = !!(ler() && ler().festa);
-      guardar(true);
+      guardar();
       visivel = noTopo();
       const animar = d.movimento && ligado() && visivel;
       const festa = animar && (d.gesto || !jaFesta);

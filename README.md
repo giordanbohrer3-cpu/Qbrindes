@@ -5,6 +5,7 @@ Site de página única para a QBrindes: brindes e presentes personalizados com g
 **O que tem:**
 
 - **Hero em vídeo:** um presente que se abre no clique (ou sozinho, 4 s depois de a página abrir, uma vez só). O laço desata, a tampa sobe com luz e pó de ouro, os produtos saem e o laser grava "Seu nome" no copo. O vídeo é pré-renderizado do nosso próprio 3D: toca liso em qualquer celular, sem travar o carregamento.
+- **Presente de boas-vindas:** quando o presente termina de abrir, um cartão de papel marfim sai de dentro da caixa (verso azul com o Q em ouro), vira no ar e pousa na frente dela: "Você ganhou 15% de desconto na primeira compra", com o código, botão de copiar e as condições no verso. Luz indireta da caixa aberta, folhas de ouro e inclinação com o mouse no PC. O cupom fica guardado no pedido e vai sozinho na mensagem do WhatsApp.
 - **Vitrine em abas:** 5 produtos reais em vídeos que tocam em sequência, com rótulos nítidos em HTML posicionados quadro a quadro e botão de pausar.
   - copo abrindo em camadas e recebendo o logo;
   - caneta recebendo o nome a laser;
@@ -37,12 +38,30 @@ node --test tests/*.test.js   # regras de pedido, busca e vídeos
 | Textos das seções, perguntas frequentes e capítulos da vitrine | `index.html` |
 | Cores, fontes e espaçamentos | `css/styles.css` → `:root` e `[data-theme="dark"]` |
 | Animações de página | `css/motion.css` e `js/motion.js` |
+| Desconto do presente (ligar, desligar, percentual, código, validade, teto) | `js/data.js` → `cupom` (veja abaixo) |
 | Comportamento dos vídeos (hero e vitrine) | `js/videos.js` (regras puras em `js/video-model.js`) |
 | Estúdio 3D | `js/3d/` (`estudio.js`, `modelos.js`, `gravacao.js`, `base.js`) |
 | Sons | `js/som.js` |
 | Fotos dos produtos | `assets/produtos/{id}-{n}-400.webp` e `-800.webp` |
 
 Depois de publicar uma mudança, suba o `?v=N` nos `<link>` e `<script>` do `index.html` para furar o cache.
+
+## Presente de boas-vindas (desconto da primeira compra)
+
+Tudo sai de um objeto só, em `js/data.js`:
+
+```js
+cupom: { ativo: true, pct: 15, codigo: 'PRESENTE15', chave: 'qb-cupom-v1' }
+// opcionais: validade: '2026-12-31' (último dia, inclusive), teto: 150 (desconto máximo em R$)
+```
+
+- **Desligar:** `ativo: false`. Somem o cartão, a linha da gaveta, o botão "Aplicar", a pergunta nas Dúvidas e o código das mensagens.
+- **Mudar percentual ou código:** o cartão, as condições, a gaveta e as mensagens mudam juntos; o vídeo não mostra o número, então não precisa renderizar nada. Código: 4 a 20 letras ou números. Percentual: inteiro de 1 a 50.
+- **Validade e teto:** aparecem sozinhos no cartão, nas condições e na mensagem.
+- **Primeira compra** não dá para conferir num site estático: quem confere é a loja, no WhatsApp, pelo número ou CPF. O site diz "guardado" e "estimativa com o cupom", nunca "desconto aplicado".
+- **Atenção (CDC, art. 30):** a oferta publicada obriga a loja. Confirme com o cliente o percentual, a validade, o teto e se vale para personalizados antes de publicar. Para encerrar, prefira encurtar a validade a desligar de repente, e honre os códigos que já chegaram.
+
+Como funciona por dentro: `js/mimo.js` (só o estado do cupom, carregado com a página), `js/mimo-cena.js` (cartão, luzes e voo 3D) e `js/confete.js` (folhas de ouro em canvas 2D), estes dois carregados no primeiro ócio depois do `load`, regras puras e testadas em `js/pedido-model.js` (`cupomVigente`, `totais`, `textoCondicoes`) e `js/video-model.js` (`momentoMimo`). Os nomes "mimo" evitam que bloqueadores de anúncio escondam o cartão.
 
 ## Ferramentas (não vão para o site)
 
@@ -84,6 +103,7 @@ Falta confirmar com o cliente:
 - prazo de produção e quantidade mínima;
 - história da marca e logo original em vetor (o atual foi redesenhado a partir do PNG do catálogo antigo);
 - quais técnicas valem para cada produto (a matriz em `catalogo.js` é uma sugestão);
+- o desconto de boas-vindas: percentual, validade, teto e se vale para personalizados (`js/data.js` → `cupom`);
 - preços de caixa e pacote: no catálogo antigo estão inconsistentes (ex.: caixa com 25 copos a R$ 1.998 sai a R$ 79,92/un contra R$ 48 avulso), por isso aparecem como "sob consulta".
 
 Ao virar versão final: tirar o `noindex` e o chip DEMO, ajustar `og:url` e `og:image` para o domínio definitivo e adicionar Schema.org `LocalBusiness`.

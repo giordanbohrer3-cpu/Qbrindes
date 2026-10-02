@@ -61,3 +61,10 @@ test('auto-abertura do presente: só visível, uma vez, com efeitos ligados e ab
   assert.equal(V.deveAgendarAuto({ visivel: false, jaTocou: false, movimento: true, oculto: false }), false);
   assert.equal(V.deveAgendarAuto({ visivel: true, jaTocou: false, movimento: true, oculto: true }), false);
 });
+
+test('cartão do desconto: 0,3 s depois do laser; sem laser, perto do fim; sem cues, nada', () => {
+  assert.ok(Math.abs(V.momentoMimo({ laserFim: 4.45, fim: 5.5 }) - 4.75) < 1e-9);
+  assert.equal(V.momentoMimo({ fim: 5.5 }), 4.75);
+  assert.equal(V.momentoMimo({}), null);
+  assert.equal(V.momentoMimo(null), null);
+});

@@ -50,8 +50,17 @@
     return i;
   }
 
+  /* Hero: o cartão do desconto sai da caixa quando a cena assenta, 0,3 s depois do laser;
+     sem laser no JSON, 0,75 s antes do fim; sem nada, null (aí o cartão entra no 'ended') */
+  function momentoMimo(cues) {
+    if (!cues) return null;
+    if (typeof cues.laserFim === 'number') return cues.laserFim + 0.3;
+    if (typeof cues.fim === 'number') return Math.max(0, cues.fim - 0.75);
+    return null;
+  }
+
   /* Hero: toca sozinho após 4 s com o topo visível, uma vez só, e nunca com os efeitos pausados */
   function deveAgendarAuto({ visivel, jaTocou, movimento, oculto }) { return !!visivel && !jaTocou && !!movimento && !oculto; }
 
-  return { escolherFormato, emEconomia, varianteHero, usar720, proximaAba, posicaoRotulo, dispararCues, deveAgendarAuto, ESPERA_AUTO_MS: 4000 };
+  return { escolherFormato, emEconomia, varianteHero, usar720, proximaAba, posicaoRotulo, dispararCues, momentoMimo, deveAgendarAuto, ESPERA_AUTO_MS: 4000 };
 });

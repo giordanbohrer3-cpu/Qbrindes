@@ -663,7 +663,7 @@ kbd { font: 600 11px/1 var(--f-texto); border: 1px solid var(--line-forte); bord
 .contato-card svg { width: 26px; height: 26px; color: var(--ouro); margin-bottom: 6px; }
 .contato-card h3 { font: 600 12px/1 var(--f-texto); letter-spacing: .14em; text-transform: uppercase; color: #B9B4D9; }
 .contato-card p { font-size: 1rem; color: #fff; overflow-wrap: anywhere; }
-.contato-card a { color: #fff; }
+.contato-card a:not(.btn) { color: #fff; }
 .contato-card--whats { background: linear-gradient(150deg, rgba(37, 211, 102, .2), rgba(37, 211, 102, .05)); border-color: rgba(37, 211, 102, .35); }
 .contato-card--whats svg { color: var(--whats); width: 34px; height: 34px; }
 .contato-card--whats p { font: 700 1.5rem/1.1 var(--f-display); }

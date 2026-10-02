@@ -563,29 +563,34 @@
   /* Foto: por padrão tira o fundo no próprio aparelho (só a pessoa vai para a gravação) */
   const semFundo = $('#est-sem-fundo');
   const fotoStatus = $('#est-foto-status');
-  let fotoOriginal = null, fotoRecortavel = false;
+  let fotoOriginal = null, fotoRecortavel = false, fotoVez = 0;
   async function usarFoto(img, nome, recortavel) {
+    const vez = ++fotoVez; // só a escolha mais recente (foto ou interruptor) aplica o resultado
     fotoOriginal = img; fotoRecortavel = recortavel; estudio.fotoNome = nome;
-    if (!recortavel || !semFundo.checked) {
-      estudio.foto = img; fotoStatus.textContent = '';
-      atualizarResumo(); avisarEstudio('foto'); som('adicionar');
+    estudio.foto = img; // enquanto recorta, o pedido já conta com a foto
+    const recortar = recortavel && semFundo.checked;
+    form.classList.toggle('foto-processando', recortar);
+    atualizarResumo();
+    if (!recortar) {
+      fotoStatus.textContent = '';
+      avisarEstudio('foto'); som('adicionar');
       return;
     }
     fotoStatus.textContent = 'Tirando o fundo da foto…';
-    form.classList.add('foto-processando');
+    let aviso;
     try {
       const { recortarFundo } = await import(MODULO_RECORTE);
       const r = await recortarFundo(img);
-      if (fotoOriginal !== img) return; // escolheram outra foto no meio do caminho
+      if (vez !== fotoVez) return; // outra foto ou o interruptor mudou no meio do caminho
       estudio.foto = r.imagem;
-      fotoStatus.textContent = r.pessoa ? 'Fundo removido.' : 'Não deu para separar alguém do fundo: usamos o centro da foto, com as bordas suaves.';
+      aviso = r.pessoa ? 'Fundo removido.' : 'Não deu para separar alguém do fundo: usamos o centro da foto, com as bordas suaves.';
     } catch (err) {
-      if (fotoOriginal !== img) return;
-      estudio.foto = img;
-      fotoStatus.textContent = 'Não deu para tirar o fundo neste aparelho; usando a foto inteira.';
+      if (vez !== fotoVez) return;
+      aviso = 'Não deu para tirar o fundo neste aparelho; usando a foto inteira.';
     }
+    fotoStatus.textContent = aviso;
     form.classList.remove('foto-processando');
-    atualizarResumo(); avisarEstudio('foto'); som('adicionar');
+    avisarEstudio('foto'); som('adicionar');
   }
   $('#est-foto').addEventListener('change', async (e) => {
     const f = e.target.files && e.target.files[0];

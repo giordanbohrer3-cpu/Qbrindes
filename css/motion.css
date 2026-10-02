@@ -134,10 +134,12 @@
   }
 }
 @keyframes gal-cab { 0%, 35% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-24px) scale(.97); } }
+/* Aproximação limitada a ~2,4x (z = 520 com perspectiva 900): perto disso o navegador rasteriza a foto
+   em tamanho gigante, mesmo transparente. Ao terminar, a foto some de vez (visibility) e sai da composição. */
 @keyframes voa {
   0% { opacity: 0; transform: translate(-50%, -50%) translateZ(-2600px) rotateY(var(--ry, 0deg)); }
-  16%, 82% { opacity: 1; }
-  100% { opacity: 0; transform: translate(-50%, -50%) translateZ(780px) rotateY(var(--ry, 0deg)); }
+  16%, 80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -50%) translateZ(520px) rotateY(var(--ry, 0deg)); visibility: hidden; }
 }
 @keyframes gal-fim { from { opacity: 0; transform: translateY(24px) scale(.97); } }
 

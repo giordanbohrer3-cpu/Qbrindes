@@ -1,6 +1,6 @@
 /* Estúdio: prévia 3D ao vivo do produto escolhido, com texto ou foto gravados. Gira com o dedo ou o mouse. */
 import * as THREE from 'three';
-import { criarPalco, luzes, sombra, brilhoChao, limitar, saida, elastico, lerp, ligado, toque } from './base.js';
+import { criarPalco, luzes, sombra, brilhoChao, limitar, saida, lerp, ligado, toque } from './base.js';
 import { criarCopo, criarCaneca, criarCaneta, criarChaveiro, criarTabua } from './modelos.js';
 import { criarLaser, fontesProntas, pontilhar, prepararCor } from './gravacao.js';
 
@@ -14,12 +14,13 @@ const QUADRO = {
 
 export function iniciarEstudio(secao) {
   const host = secao.querySelector('#palco-estudio');
-  const palco = criarPalco(host, { fov: 30, exposicao: 1.12, ambiente: 0.9 });
+  const palco = criarPalco(host, { fov: 30, exposicao: 1.12, ambiente: 0.9, recusarSoftware: !/[?&]3d=1/.test(location.search) });
+  if (!palco.renderer) { host.classList.add('palco3d--estatico'); return null; }
   const { cena, camera } = palco;
   luzes(cena);
   const chao = sombra(1.2, 0.55);
   chao.position.y = -1.0;
-  const halo = brilhoChao(1.8, 0xffb21e, 0.22);
+  const halo = brilhoChao(1.8, 0xf3d9a4, 0.1);
   halo.position.y = -0.998;
   cena.add(chao, halo);
   const laser = criarLaser({ faiscas: toque ? 40 : 70 });
@@ -148,7 +149,7 @@ export function iniciarEstudio(secao) {
       troca = limitar((t - trocaT) / 650);
       animando = true;
     }
-    const entra = elastico(troca);
+    const entra = saida(troca); // entra suave, sem quique
     atual.pose.scale.setScalar(Math.max(0.0001, entra));
     if (saindo) {
       const s = 1 - saida(limitar(troca * 1.8));
@@ -193,6 +194,29 @@ export function iniciarEstudio(secao) {
   document.addEventListener('qb:motion', () => palco.marcar());
   const inicial = window.QBEstudio && window.QBEstudio.estado;
   if (inicial) aplicar(inicial, 'produto');
-  requestAnimationFrame(() => requestAnimationFrame(() => host.classList.add('palco3d--pronto')));
+
+  // Primeiro quadro: compila em paralelo (sem travar), desenha e só então tira o pôster
+  const renderer = palco.renderer;
+  // Compilação paralela quando a GPU permite (KHR_parallel_shader_compile); senão, um produto por vez em ocioso
+  const paralelo = renderer.compileAsync && renderer.extensions.has('KHR_parallel_shader_compile');
+  const compilar = () => (paralelo ? renderer.compileAsync(cena, camera) : Promise.resolve(renderer.compile(cena, camera)));
+  compilar().catch(() => {}).then(() => {
+    palco.marcar();
+    requestAnimationFrame(() => requestAnimationFrame(() => host.classList.add('palco3d--pronto')));
+    // Aquece os outros produtos um por vez, ocioso: trocar de produto nunca compila no clique
+    const fila = Object.keys(QUADRO).filter((n) => !modelos[n]);
+    const ocioso = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 200));
+    const proximo = () => {
+      const nome = fila.shift();
+      if (!nome) return;
+      ocioso(() => {
+        const m = obter(nome);
+        const antes = m.pose.visible;
+        m.pose.visible = true; m.pose.scale.setScalar(0.0001);
+        compilar().catch(() => {}).then(() => { if (m !== atual && m !== saindo) m.pose.visible = antes; proximo(); });
+      });
+    };
+    proximo();
+  });
   return palco;
 }

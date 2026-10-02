@@ -60,7 +60,7 @@
       const capa = QB.capas[c.id];
       const prod = produtos.find((p) => p.imgs.includes(capa));
       const recorte = prod ? prod.recorte[prod.imgs.indexOf(capa)] : true;
-      return '<li style="--i:' + i + '"><a class="cat" href="#catalogo" data-filtro-cat="' + c.id + '" data-tilt>' +
+      return '<li style="--i:' + i + '"><a class="cat" href="#catalogo" data-filtro-cat="' + c.id + '">' +
         '<span class="cat__foto' + (recorte ? '' : ' cat__foto--foto') + '"><img src="' + imgSrc(capa) + '" alt="" width="400" height="500" loading="lazy" decoding="async"></span>' +
         '<svg class="cat__icone" aria-hidden="true"><use href="#c-' + c.icone + '"/></svg>' +
         '<span class="cat__info"><span class="cat__nome">' + esc(c.nome) + '<span class="cat__qtd">' + c.qtd + (c.qtd === 1 ? ' item' : ' itens') + '</span></span>' +
@@ -100,10 +100,10 @@
 
   function cardHTML(p, i, novo) {
     const chave = p.imgs[0];
-    const tecs = p.tecnicas.slice(0, 2).map((t) => '<span class="tag">' + icone(t === 'laser' ? 'i-laser' : 'i-foto') + esc(QB.tecnicas[t].curto) + '</span>').join('');
-    const cores = p.cores.slice(0, 6).map((c) => '<i title="' + esc(c[0]) + '" style="' + corPonto(c[1]) + '"></i>').join('') + (p.cores.length > 6 ? '<small>+' + (p.cores.length - 6) + '</small>' : '');
-    return '<li class="card' + (novo ? ' novo' : '') + '" style="--i:' + i + '" data-id="' + p.id + '" data-tilt>' +
-      '<span class="card__foto' + (p.recorte[0] ? '' : ' card__foto--foto') + '"><img src="' + imgSrc(chave) + '" srcset="' + srcset(chave) + '" sizes="(max-width: 760px) 50vw, (max-width: 1020px) 33vw, 300px" alt="' + esc(p.nome) + '" width="400" height="500" loading="lazy" decoding="async"><span class="card__tecs">' + tecs + '</span></span>' +
+    // Selos de técnica ficam só na ficha; no cartão, no máximo 4 cores
+    const cores = p.cores.slice(0, 4).map((c) => '<i title="' + esc(c[0]) + '" style="' + corPonto(c[1]) + '"></i>').join('') + (p.cores.length > 4 ? '<small>+' + (p.cores.length - 4) + '</small>' : '');
+    return '<li class="card' + (novo ? ' novo' : '') + '" style="--i:' + i + '" data-id="' + p.id + '">' +
+      '<span class="card__foto' + (p.recorte[0] ? '' : ' card__foto--foto') + '"><img src="' + imgSrc(chave) + '" srcset="' + srcset(chave) + '" sizes="(max-width: 760px) 50vw, (max-width: 1020px) 33vw, 300px" alt="' + esc(p.nome) + '" width="400" height="500" loading="lazy" decoding="async"></span>' +
       '<div class="card__info"><p class="card__cat">' + esc(p.catNome) + '</p><h3 class="card__nome"><a href="#produto-' + p.id + '" data-ficha="' + p.id + '">' + esc(p.nome) + '</a></h3>' +
       (cores ? '<div class="card__cores" aria-label="' + p.cores.length + ' cores">' + cores + '</div>' : '') + '</div>' +
       '<div class="card__rodape"><p class="preco">' + precoHTML(p.preco) + '</p><div class="card__acoes">' +
@@ -153,7 +153,7 @@
       const p = porId[id];
       if (!p) return '';
       const chave = p.imgs[0];
-      return '<li style="--i:' + i + '"><article class="faca" data-tilt data-spot><span class="faca__foto"><img src="' + imgSrc(chave, 800) + '" alt="' + esc(p.nome) + '" width="800" height="1000" loading="lazy" decoding="async"></span>' +
+      return '<li style="--i:' + i + '"><article class="faca"><span class="faca__foto"><img src="' + imgSrc(chave, 800) + '" alt="' + esc(p.nome) + '" width="800" height="1000" loading="lazy" decoding="async"></span>' +
         '<div class="faca__info"><h3><a href="#produto-' + p.id + '" data-ficha="' + p.id + '">' + esc(p.nome) + '</a></h3><p class="preco">' + precoHTML(p.preco) + '</p></div></article></li>';
     }).join('');
   }
@@ -162,19 +162,20 @@
       const imgs = o.itens.map((id) => porId[id]).filter((p) => p && p.recorte[0]).slice(0, 3);
       return '<li style="--i:' + i + '"><button type="button" class="ocasiao" data-oc="' + o.id + '" data-ocasiao="' + o.id + '">' +
         '<span class="ocasiao__palco" aria-hidden="true">' + imgs.map((p) => '<img src="' + imgSrc(p.imgs[0]) + '" alt="" width="400" height="500" loading="lazy" decoding="async">').join('') + '</span>' +
-        '<span class="ocasiao__info"><h3>' + esc(o.nome) + '</h3><p>' + esc(o.texto) + '</p><span class="ocasiao__ver">Ver ' + o.itens.length + ' produtos ' + icone('i-seta') + '</span></span></button></li>';
+        '<span class="ocasiao__info"><span class="ocasiao__eyebrow">' + o.itens.length + ' produtos</span><h3>' + esc(o.nome) + '</h3><p>' + esc(o.texto) + '</p><span class="ocasiao__ver">Ver a seleção ' + icone('i-seta') + '</span></span></button></li>';
     }).join('');
   }
   function renderGaleria() {
-    // Posições espalhadas em volta do centro, para o túnel passar "por fora" da câmera.
-    const pos = [[24, 36], [76, 60], [30, 72], [72, 30], [18, 58], [82, 44], [36, 30], [64, 74], [22, 44], [78, 64]];
-    $('#galeria-tunel').innerHTML = QB.galeria.map((chave, i) => {
+    // Cada foto tem a sua faixa da rolagem (--ini a --fim): todas passam pela câmera antes da cena final.
+    const pos = [[26, 40], [74, 58], [30, 66], [70, 34], [22, 52], [78, 46], [34, 32], [66, 70]];
+    const fotos = QB.galeria.slice(0, pos.length);
+    $('#galeria-tunel').innerHTML = fotos.map((chave, i) => {
       const id = Number(chave.split('-')[0]);
       const p = porId[id];
-      const d = 3000 + i * 640;
-      const [x, y] = pos[i % pos.length];
-      return '<li style="--x:' + x + '%;--y:' + y + '%;--d:' + d + ';--ry:' + (x < 50 ? 12 : -12) + 'deg"><figure style="margin:0;position:relative">' +
-        '<img src="' + imgSrc(chave, 800) + '" alt="' + esc(p ? p.nome : 'Produto QBrindes') + '" width="800" height="1000" loading="lazy" decoding="async"></figure></li>';
+      const ini = 2 + i * 6.5, fim = ini + 28; // a última sai em 75,5%, antes da cena final (78%)
+      const [x, y] = pos[i];
+      return '<li style="--x:' + x + '%;--y:' + y + '%;--ini:' + ini + '%;--fim:' + fim + '%;--ry:' + (x < 50 ? 10 : -10) + 'deg">' +
+        '<img src="' + imgSrc(chave, 800) + '" srcset="' + srcset(chave) + '" sizes="(max-width: 760px) 45vw, 300px" alt="' + esc(p ? p.nome : 'Produto QBrindes') + '" width="800" height="1000" loading="lazy" decoding="async"></li>';
     }).join('');
   }
 
@@ -193,7 +194,7 @@
 
   function renderPedido() {
     const t = P.totais(pedido);
-    $$('[data-contador]').forEach((el) => { el.textContent = t.qtd; });
+    $$('[data-contador]').forEach((el) => { el.textContent = t.qtd; el.dataset.n = t.qtd; });
     $$('[data-contador-sr]').forEach((el) => { el.textContent = t.qtd + (t.qtd === 1 ? ' item' : ' itens') + ' no pedido'; });
     const lista = $('#pedido-lista');
     lista.innerHTML = pedido.itens.map((it, i) => {
@@ -225,7 +226,7 @@
 
   function voar(origem) {
     const img = origem && (origem.tagName === 'IMG' ? origem : origem.querySelector('img'));
-    const destino = $('.btn-pedido');
+    const destino = $$('.ilha__sacola, .dock [data-abrir-pedido]').find((el) => el.getBoundingClientRect().width > 0);
     if (!img || !destino || !movimento() || !img.getBoundingClientRect().width) return;
     const a = img.getBoundingClientRect();
     const b = destino.getBoundingClientRect();
@@ -288,16 +289,12 @@
     if (!dlg || dlg.open) return;
     dlg.showModal();
     html.classList.add('dlg-aberto');
-    if (window.QBMotion && window.QBMotion.lenis) window.QBMotion.lenis.stop();
   }
   function fechar(dlg) {
     if (!dlg || !dlg.open) return;
     const fim = () => {
       dlg.classList.remove('fechando'); dlg.close();
-      if (!$$('dialog[open]').length) {
-        html.classList.remove('dlg-aberto');
-        if (window.QBMotion && window.QBMotion.lenis) window.QBMotion.lenis.start();
-      }
+      if (!$$('dialog[open]').length) html.classList.remove('dlg-aberto');
     };
     if (movimento()) { dlg.classList.add('fechando'); setTimeout(fim, 230); } else fim();
   }
@@ -435,8 +432,7 @@
     const card = $('.card[data-id="' + id + '"]');
     if (!card) return;
     rolarAte(card);
-    const lenis = window.QBMotion && window.QBMotion.lenis;
-    setTimeout(() => { card.classList.remove('piscar'); void card.offsetWidth; card.classList.add('piscar'); }, lenis ? 1250 : movimento() ? 750 : 50);
+    setTimeout(() => { card.classList.remove('piscar'); void card.offsetWidth; card.classList.add('piscar'); }, movimento() ? 750 : 50);
   }
   campo.addEventListener('input', renderBusca);
   campo.addEventListener('keydown', (e) => {
@@ -455,27 +451,8 @@
     const digitando = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) || document.activeElement.isContentEditable;
     if ((e.key === 'k' || e.key === 'K') && (e.ctrlKey || e.metaKey)) { e.preventDefault(); abrirBusca(); }
     else if (e.key === '/' && !digitando && !$$('dialog[open]').length) { e.preventDefault(); abrirBusca(); }
-    else if (e.key === 'Escape' && html.classList.contains('menu-aberto')) alternarMenu(false);
+    else if (e.key === 'Escape' && !demoPop.hidden) fecharDemo(true);
   });
-
-  // Dica digitada na barra de busca
-  (function dicaBusca() {
-    const alvo = $('[data-dica-busca]');
-    if (!alvo) return;
-    const frases = ['Buscar copo térmico…', 'Buscar caneta com nome…', 'Buscar kit churrasco…', 'Buscar taça de gin…', 'Buscar chaveiro…'];
-    let f = 0, c = 0, apagando = false;
-    function passo() {
-      if (!movimento() || document.hidden) { alvo.textContent = 'Buscar produtos…'; return setTimeout(passo, 1500); }
-      const frase = frases[f];
-      c += apagando ? -1 : 1;
-      alvo.textContent = frase.slice(0, c) || ' ';
-      let espera = apagando ? 28 : 55;
-      if (!apagando && c >= frase.length) { apagando = true; espera = 1800; }
-      else if (apagando && c <= 0) { apagando = false; f = (f + 1) % frases.length; espera = 300; }
-      setTimeout(passo, espera);
-    }
-    setTimeout(passo, 2400);
-  })();
 
   /* ---------- Tema ---------- */
   function definirTema(t) {
@@ -488,17 +465,22 @@
     som('alternar');
   }));
 
-  /* ---------- Menu ---------- */
-  const btnMenu = $('.topo__menu');
-  function alternarMenu(forcar) {
-    const abrirMenu = typeof forcar === 'boolean' ? forcar : !html.classList.contains('menu-aberto');
-    html.classList.toggle('menu-aberto', abrirMenu);
-    btnMenu.setAttribute('aria-expanded', String(abrirMenu));
-    btnMenu.setAttribute('aria-label', abrirMenu ? 'Fechar menu' : 'Abrir menu');
-    btnMenu.innerHTML = icone(abrirMenu ? 'i-fechar' : 'i-menu');
+  /* ---------- Chip da demo: abre um painel pequeno com som, efeitos, tema e sobre ---------- */
+  const demoBtn = $('.demo-chip__btn');
+  const demoPop = $('#demo-pop');
+  function fecharDemo(focar) {
+    demoPop.hidden = true;
+    demoBtn.setAttribute('aria-expanded', 'false');
+    if (focar) demoBtn.focus();
   }
-  btnMenu.addEventListener('click', () => alternarMenu());
-  $('#menu').addEventListener('click', (e) => { if (e.target.closest('a')) alternarMenu(false); });
+  demoBtn.addEventListener('click', () => {
+    const abrirPop = demoPop.hidden;
+    demoPop.hidden = !abrirPop;
+    demoBtn.setAttribute('aria-expanded', String(abrirPop));
+    if (abrirPop) $('button', demoPop).focus();
+  });
+  document.addEventListener('pointerdown', (e) => { if (!demoPop.hidden && !e.target.closest('.demo-chip')) fecharDemo(false); });
+  demoPop.addEventListener('click', (e) => { if (e.target.closest('[data-abrir]')) fecharDemo(false); });
 
   /* ---------- Estúdio (painel; a cena 3D escuta 'qb:estudio') ---------- */
   const ESTUDIO = {
@@ -633,38 +615,39 @@
     }
   });
 
-  /* ---------- Cabeçalho: compacta ao rolar, claro sobre o hero, item do menu atual ---------- */
-  const hero = $('#inicio');
-  let fimHero = 0;
-  function medir() { fimHero = hero.offsetTop + hero.offsetHeight - 80; }
-  let agendado = false;
-  function estadoTopo() {
+  /* ---------- Cápsula: some ao descer e volta ao subir; marcador desliza até a seção atual ---------- */
+  const ilha = $('.ilha');
+  const linksIlha = $$('.ilha__links a');
+  const linksDock = $$('.dock a.dock__item');
+  const marcador = $('.ilha__marcador');
+  const caixaLinks = $('.ilha__links');
+  let yAntes = window.scrollY, agendado = false, secaoAtual = null;
+  function estadoIlha() {
     agendado = false;
     const y = window.scrollY;
-    html.classList.toggle('topo-compacto', y > 40);
-    html.classList.toggle('sobre-hero', y < fimHero - window.innerHeight * 0.4 || (y < fimHero && y < 40));
+    const descendo = y > yAntes + 4, subindo = y < yAntes - 4;
+    if (y < 80 || subindo || html.classList.contains('dlg-aberto')) ilha.classList.remove('oculta');
+    else if (descendo) ilha.classList.add('oculta');
+    if (Math.abs(y - yAntes) > 4) yAntes = y;
   }
-  window.addEventListener('scroll', () => { if (!agendado) { agendado = true; requestAnimationFrame(estadoTopo); } }, { passive: true });
-  window.addEventListener('resize', () => { medir(); estadoTopo(); });
-  requestAnimationFrame(() => { medir(); estadoTopo(); });
-  if ('ResizeObserver' in window) new ResizeObserver(medir).observe(document.body);
+  window.addEventListener('scroll', () => { if (!agendado) { agendado = true; requestAnimationFrame(estadoIlha); } }, { passive: true });
+  ilha.addEventListener('focusin', () => ilha.classList.remove('oculta'));
 
-  // Cabeçalho escuro quando passa por cima de uma seção escura
-  const escuras = new Set();
-  const ioEscuro = new IntersectionObserver((ents) => {
-    ents.forEach((en) => { if (en.isIntersecting) escuras.add(en.target); else escuras.delete(en.target); });
-    html.classList.toggle('topo-escuro', escuras.size > 0);
-  }, { rootMargin: '0px 0px -94% 0px' });
-  $$('.sec-dark, .rodape').forEach((s) => ioEscuro.observe(s));
-
-  const links = $$('.topo__nav a');
+  function moverMarcador() {
+    const a = linksIlha.find((l) => l.getAttribute('href') === '#' + secaoAtual);
+    caixaLinks.classList.toggle('com-marcador', !!a);
+    if (!a) return;
+    marcador.style.setProperty('--mx', a.offsetLeft + 'px');
+    marcador.style.setProperty('--mw', a.offsetWidth + 'px');
+  }
   const ioNav = new IntersectionObserver((ents) => {
-    ents.forEach((en) => {
-      if (!en.isIntersecting) return;
-      links.forEach((a) => a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + en.target.id)));
-    });
+    ents.forEach((en) => { if (en.isIntersecting) secaoAtual = en.target.id; });
+    [...linksIlha, ...linksDock].forEach((l) => l.setAttribute('aria-current', String(l.getAttribute('href') === '#' + secaoAtual)));
+    moverMarcador();
   }, { rootMargin: '-45% 0px -50% 0px' });
-  ['vitrine', 'estudio', 'catalogo', 'ocasioes', 'contato'].forEach((id) => { const s = document.getElementById(id); if (s) ioNav.observe(s); });
+  ['inicio', 'categorias', 'vitrine', 'estudio', 'catalogo', 'artesanal', 'ocasioes', 'como', 'galeria', 'duvidas', 'sobre', 'contato'].forEach((id) => { const s = document.getElementById(id); if (s) ioNav.observe(s); });
+  window.addEventListener('resize', moverMarcador);
+  if (document.fonts) document.fonts.ready.then(moverMarcador);
 
   /* ---------- Início ---------- */
   renderCategorias();

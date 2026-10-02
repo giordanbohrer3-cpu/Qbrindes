@@ -1,66 +1,41 @@
-/* Carrega o 3D só quando faz sentido: com WebGL, perto da seção e depois da primeira pintura.
-   Sem WebGL ou com falha, fica o pôster (imagem) e o layout estático. */
+/* Estúdio 3D (o único 3D ao vivo do site; o presente e a vitrine são vídeos).
+   Carrega só perto da seção, com a página ociosa e a rolagem parada, para nunca disputar com o scroll.
+   Sem WebGL, com GPU por software ou com falha, fica o pôster (imagem). */
 const html = document.documentElement;
-const ligado = () => html.classList.contains('motion-on');
+const temWebGL = () => !!(window.WebGL2RenderingContext || window.WebGLRenderingContext);
+const ocioso = (fn, t) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: t || 1500 }) : setTimeout(fn, 200));
 
-// Checagem barata: criar um contexto só para testar custa caro em aparelho fraco.
-// Se o WebGL falhar de verdade ao criar o palco, o pôster continua no lugar.
-function temWebGL() { return !!(window.WebGL2RenderingContext || window.WebGLRenderingContext); }
-const quandoOcioso = (fn) => ('requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 1200 }) : setTimeout(fn, 250));
-function quandoPerto(el, margem, fn) {
-  if (!el) return;
-  const io = new IntersectionObserver((ents) => {
-    if (ents.some((e) => e.isIntersecting)) { io.disconnect(); fn(); }
-  }, { rootMargin: margem });
-  io.observe(el);
+// Espera a rolagem ficar parada por 250 ms e o navegador ocioso
+function quandoCalmo(fn) {
+  let t = 0;
+  const pronto = () => { window.removeEventListener('scroll', mexeu); ocioso(fn); };
+  const mexeu = () => { clearTimeout(t); t = setTimeout(pronto, 250); };
+  window.addEventListener('scroll', mexeu, { passive: true });
+  mexeu();
 }
 
 if (!temWebGL()) {
   html.classList.add('sem-3d');
 } else {
-  const feitos = {};
-  const falhou = (onde, erro) => { console.warn('3D indisponível em ' + onde, erro); };
-
-  async function hero() {
-    if (feitos.hero || !ligado()) return;
-    feitos.hero = true;
-    try { (window.QB3D = window.QB3D || {}).hero = (await import('./hero.js?v=2')).iniciarHero(document.getElementById('inicio')); }
-    catch (e) { falhou('hero', e); }
+  const secao = document.getElementById('estudio');
+  let feito = false;
+  async function iniciar() {
+    if (feito) return;
+    feito = true;
+    try { window.QB3D = { estudio: (await import('./estudio.js?v=3')).iniciarEstudio(secao) }; }
+    catch (e) { console.warn('3D indisponível no estúdio', e); }
   }
-  async function vitrine() {
-    if (feitos.vitrine || !ligado() || !html.classList.contains('pin-on')) return;
-    feitos.vitrine = true;
-    try { (window.QB3D = window.QB3D || {}).vitrine = (await import('./vitrine.js?v=2')).iniciarVitrine(document.getElementById('vitrine')); }
-    catch (e) { falhou('vitrine', e); html.classList.add('sem-3d'); }
-  }
-  async function estudio() {
-    if (feitos.estudio) return;
-    feitos.estudio = true;
-    try { (window.QB3D = window.QB3D || {}).estudio = (await import('./estudio.js?v=2')).iniciarEstudio(document.getElementById('estudio')); }
-    catch (e) { falhou('estúdio', e); }
-  }
-
-  // O hero abre com o pôster (igual ao primeiro quadro) e o WebGL liga no primeiro gesto:
-  // a página fica leve para carregar e a troca é invisível.
-  function noPrimeiroGesto(fn) {
-    const evs = ['pointermove', 'pointerdown', 'wheel', 'touchstart', 'keydown', 'scroll'];
-    const op = { passive: true, capture: true };
-    const vai = () => { evs.forEach((ev) => window.removeEventListener(ev, vai, op)); fn(); };
-    evs.forEach((ev) => window.addEventListener(ev, vai, op));
-  }
-  const preparar = () => quandoOcioso(() => {
+  // Baixa o three.js cedo, ocioso (só o download; nada roda até o estúdio chegar perto)
+  const preparar = () => ocioso(() => {
     const l = document.createElement('link');
-    l.rel = 'modulepreload'; l.href = 'js/vendor/three.qb.min.js?v=2';
+    l.rel = 'modulepreload'; l.href = 'js/vendor/three.qb.min.js?v=3';
     document.head.appendChild(l);
-    noPrimeiroGesto(hero);
-  });
+  }, 4000);
   if (document.readyState === 'complete') preparar(); else window.addEventListener('load', preparar, { once: true });
-  quandoPerto(document.getElementById('vitrine'), '120% 0px', vitrine);
-  quandoPerto(document.getElementById('estudio'), '100% 0px', estudio);
-  document.addEventListener('qb:motion', (e) => {
-    if (!e.detail) return;
-    hero();
-    const v = document.getElementById('vitrine');
-    if (v && v.getBoundingClientRect().top < innerHeight * 2.2) vitrine(); else quandoPerto(v, '120% 0px', vitrine);
-  });
+  const io = new IntersectionObserver((ents) => {
+    if (!ents.some((e) => e.isIntersecting)) return;
+    io.disconnect();
+    quandoCalmo(iniciar);
+  }, { rootMargin: '150% 0px' });
+  if (secao) io.observe(secao);
 }

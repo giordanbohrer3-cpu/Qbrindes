@@ -11,7 +11,7 @@ Site de página única para a QBrindes: brindes e presentes personalizados com g
   - chaveiro gravado frente e verso;
   - garrafa mostrando tampa, anel e canudo;
   - taça de gin que desmonta e vira copo.
-- **Estúdio de personalização (3D ao vivo):** o cliente escolhe produto, técnica, texto, fonte, cor e foto e vê a prévia girando com o dedo. A foto vira pontilhado a laser na tábua ou estampa colorida na caneca, e não sai do aparelho.
+- **Estúdio de personalização (3D ao vivo):** o cliente escolhe produto, técnica, texto, fonte, cor e foto e vê a prévia girando com o dedo. A foto tem o fundo removido no próprio aparelho (segmentação do MediaPipe), vira pontilhado a laser na tábua ou estampa colorida na caneca, e não sai do aparelho.
 - **Catálogo completo:** os 83 produtos, com fotos recortadas por IA, filtros, ordenação, ficha, busca rápida (`/` ou `Ctrl+K`) e pedido pronto para o WhatsApp.
 - **Navegação própria:** cápsula flutuante no computador (some ao descer, volta ao subir) e dock de app no celular, com o WhatsApp no centro.
 - **Movimento:** só `transform` e `opacity`. Anel do "Como funciona" e túnel da galeria movidos pela rolagem (`animation-timeline`), com cena final e fundo contínuo. Sons sintetizados bem baixos.
@@ -92,5 +92,5 @@ Ao virar versão final: tirar o `noindex` e o chip DEMO, ajustar `og:url` e `og:
 
 - **Fotos dos produtos:** catálogo da QBrindes (qbbrindes.gopage.bio), recortadas por IA e tratadas.
 - **Fontes:** Playfair Display, Inter e Great Vibes (SIL Open Font License, em `assets/fonts/`).
-- **Biblioteca:** three.js (MIT), em `js/vendor/` com a licença.
+- **Bibliotecas:** three.js (MIT), em `js/vendor/` com a licença; MediaPipe Tasks Vision (Apache 2.0), carregado do jsDelivr só quando alguém escolhe uma foto, com o modelo `selfie_segmenter` em `assets/modelos/`. A telemetria de uso do MediaPipe é bloqueada no próprio site.
 - **3D, vídeos e sons:** modelos 3D desenhados no próprio código (ilustrativos), vídeos renderizados deles e sons sintetizados com Web Audio, sem arquivos.

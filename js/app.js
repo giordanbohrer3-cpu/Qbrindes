@@ -21,7 +21,9 @@
   const porId = {};
   produtos.forEach((p, i) => { p.catNome = catPorId[p.cat].nome; p.ordem = i; porId[p.id] = p; });
 
-  const imgSrc = (chave, w) => 'assets/produtos/' + chave + '-' + (w || 400) + '.webp';
+  // ?v=3: as fotos foram recortadas de novo com o mesmo nome de arquivo; a versão fura o cache do navegador
+  const imgSrc = (chave, w) => 'assets/produtos/' + chave + '-' + (w || 400) + '.webp?v=3';
+  const MODULO_RECORTE = new URL('recorte-foto.js?v=3', document.currentScript ? document.currentScript.src : location.href.replace(/[^/]*$/, 'js/')).href;
   const srcset = (chave) => imgSrc(chave, 400) + ' 400w, ' + imgSrc(chave, 800) + ' 800w';
   const precoHTML = (v) => v == null ? '<span class="preco preco--consulta">Sob consulta</span>' : P.formatarPreco(v) + '<small>/un</small>';
   const icone = (id) => '<svg aria-hidden="true"><use href="#' + id + '"/></svg>';
@@ -558,17 +560,52 @@
   function carregarImagem(src) {
     return new Promise((ok, falha) => { const im = new Image(); im.decoding = 'async'; im.onload = () => ok(im); im.onerror = falha; im.src = src; });
   }
+  /* Foto: por padrão tira o fundo no próprio aparelho (só a pessoa vai para a gravação) */
+  const semFundo = $('#est-sem-fundo');
+  const fotoStatus = $('#est-foto-status');
+  let fotoOriginal = null, fotoRecortavel = false, fotoVez = 0;
+  async function usarFoto(img, nome, recortavel) {
+    const vez = ++fotoVez; // só a escolha mais recente (foto ou interruptor) aplica o resultado
+    fotoOriginal = img; fotoRecortavel = recortavel; estudio.fotoNome = nome;
+    estudio.foto = img; // enquanto recorta, o pedido já conta com a foto
+    const recortar = recortavel && semFundo.checked;
+    form.classList.toggle('foto-processando', recortar);
+    atualizarResumo();
+    if (!recortar) {
+      fotoStatus.textContent = '';
+      avisarEstudio('foto'); som('adicionar');
+      return;
+    }
+    fotoStatus.textContent = 'Tirando o fundo da foto…';
+    let aviso;
+    try {
+      const { recortarFundo } = await import(MODULO_RECORTE);
+      const r = await recortarFundo(img);
+      if (vez !== fotoVez) return; // outra foto ou o interruptor mudou no meio do caminho
+      estudio.foto = r.imagem;
+      aviso = r.pessoa ? 'Fundo removido.' : 'Não deu para separar alguém do fundo: usamos o centro da foto, com as bordas suaves.';
+    } catch (err) {
+      if (vez !== fotoVez) return;
+      aviso = 'Não deu para tirar o fundo neste aparelho; usando a foto inteira.';
+    }
+    fotoStatus.textContent = aviso;
+    form.classList.remove('foto-processando');
+    avisarEstudio('foto'); som('adicionar');
+  }
   $('#est-foto').addEventListener('change', async (e) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     const url = URL.createObjectURL(f);
-    try { estudio.foto = await carregarImagem(url); estudio.fotoNome = f.name; atualizarResumo(); avisarEstudio('foto'); som('adicionar'); }
-    catch (err) { toast('Não consegui abrir essa imagem. Tente outra.'); }
+    e.target.value = ''; // permite escolher a mesma foto de novo
+    let img = null;
+    try { img = await carregarImagem(url); } catch (err) { toast('Não consegui abrir essa imagem. Tente outra.'); return; }
+    usarFoto(img, f.name, true);
   });
   $('[data-foto-exemplo]').addEventListener('click', async () => {
-    try { estudio.foto = await carregarImagem('assets/exemplo-logo.png'); estudio.fotoNome = 'exemplo'; atualizarResumo(); avisarEstudio('foto'); som('adicionar'); }
+    try { usarFoto(await carregarImagem('assets/exemplo-logo.png'), 'exemplo', false); } // logo já vem sem fundo
     catch (err) { /* sem exemplo */ }
   });
+  semFundo.addEventListener('change', () => { if (fotoOriginal && fotoRecortavel) usarFoto(fotoOriginal, estudio.fotoNome, true); });
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     adicionarAoPedido(itemEstudio(), $('#palco-estudio canvas') ? null : $('#palco-estudio img'));

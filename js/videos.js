@@ -177,19 +177,27 @@
       let texto = '';
       for (const r of rotulos) {
         const on = t >= r.de && t <= r.ate;
-        if (on !== r.on) { r.on = on; r.el.classList.toggle('on', on); }
+        if (on !== r.on) { r.on = on; r.el.classList.toggle('on', on); r.conferir = on; }
         if (!on) continue;
         texto = r.texto;
         const p = M.posicaoRotulo(r.pts, t);
         if (!p) continue;
         const x = Math.round(p[0] * 1000) / 10, y = Math.round(p[1] * 1000) / 10;
         if (x !== r.x || y !== r.y) { r.x = x; r.y = y; r.el.style.left = x + '%'; r.el.style.top = y + '%'; }
+        if (r.conferir) { r.conferir = false; caberNaTela(r); }
       }
       if (legenda && texto !== legendaAtual) {
         legendaAtual = texto;
         legenda.classList.add('trocando');
         setTimeout(() => { legenda.textContent = legendaAtual; legenda.classList.remove('trocando'); }, 180);
       }
+    }
+    // Rótulo que passaria da borda da janela troca de lado (uma medição por aparição, não por quadro)
+    function caberNaTela(r) {
+      const larg = document.documentElement.clientWidth;
+      r.el.classList.toggle('rotulo--esq', r.lado < 0);
+      const b = r.el.getBoundingClientRect();
+      if (b.right > larg - 8 || b.left < 8) r.el.classList.toggle('rotulo--esq');
     }
     let cuesCap = [], proxCue = 0, vigia = null;
     // Uma única cadeia de callbacks por vez (pausar e retomar não duplica o trabalho por quadro)
@@ -269,8 +277,8 @@
           montarRotulos(m); prepararCues(m);
           progresso(i, (m && m.dur) || atras.duration || 7, !atras.paused);
           vigiar();
-          // pré-carrega o próximo capítulo no buffer livre
-          ocioso(() => { if (atual === i && antes && antes !== frente) carregarEm(antes, M.proximaAba(i, NOMES.length)); }, 1500);
+          // pré-carrega o próximo capítulo no buffer livre (inclusive na primeira vez, quando ainda não havia "antes")
+          ocioso(() => { const livre = videos.find((v) => v !== frente); if (atual === i && livre) carregarEm(livre, M.proximaAba(i, NOMES.length)); }, 1500);
         });
       });
       if (p && p.catch) p.catch(() => { if (atual === i) mostrarParado(true); });

@@ -47,7 +47,7 @@
   }
   function atualizarWhatsContato() {
     const nome = $('#ped-nome') ? $('#ped-nome').value : '';
-    const url = P.linkWhats(loja.whatsapp, P.mensagemContato({ nome }));
+    const url = P.linkWhats(loja.whatsapp, P.mensagemContato({ nome, cupom: cupomGanho() }));
     $$('[data-whats="contato"]').forEach((a) => { a.href = url; });
   }
   $$('[data-preco-de]').forEach((el) => {
@@ -109,7 +109,7 @@
       '<div class="card__info"><p class="card__cat">' + esc(p.catNome) + '</p><h3 class="card__nome"><a href="#produto-' + p.id + '" data-ficha="' + p.id + '">' + esc(p.nome) + '</a></h3>' +
       (cores ? '<div class="card__cores" aria-label="' + p.cores.length + ' cores">' + cores + '</div>' : '') + '</div>' +
       '<div class="card__rodape"><p class="preco">' + precoHTML(p.preco) + '</p><div class="card__acoes">' +
-      '<a class="btn-wpp" href="' + P.linkWhats(loja.whatsapp, P.mensagemProduto(p)) + '" target="_blank" rel="noopener" aria-label="Perguntar no WhatsApp sobre ' + esc(p.nome) + '">' + icone('i-whats') + '</a>' +
+      '<a class="btn-wpp" href="' + P.linkWhats(loja.whatsapp, P.mensagemProduto(p, { cupom: cupomGanho() })) + '" target="_blank" rel="noopener" aria-label="Perguntar no WhatsApp sobre ' + esc(p.nome) + '">' + icone('i-whats') + '</a>' +
       '<button class="btn-add" type="button" data-add="' + p.id + '" aria-label="Adicionar ' + esc(p.nome) + ' ao pedido">' + icone('i-mais') + '</button></div></div></li>';
   }
 
@@ -183,6 +183,24 @@
 
   /* ---------- Pedido ---------- */
   let pedido = P.criarPedido();
+  /* Cupom da primeira compra: guardado ao abrir o presente (js/mimo.js, evento 'qb:cupom') ou pela gaveta.
+     Entra na estimativa do pedido e em todas as mensagens do WhatsApp. */
+  const C = window.QBCupom || { config: null, vigente: () => null, guardado: () => false, guardar() {} };
+  const cupomGanho = () => C.vigente();
+  if (C.config) $$('[data-cupom-pct]').forEach((el) => { el.textContent = C.config.pct + '%'; });
+  $('#pedido-aplicar').addEventListener('click', () => {
+    C.guardar();
+    toast('Cupom <b>' + C.config.codigo + '</b> guardado: ' + C.config.pct + '% na primeira compra');
+    som('adicionar');
+  });
+  document.addEventListener('qb:cupom', () => {
+    renderPedido(); atualizarWhatsContato(); atualizarResumo();
+    $$('.card').forEach((card) => {
+      const p = porId[card.dataset.id], a = $('.btn-wpp', card);
+      if (p && a) a.href = P.linkWhats(loja.whatsapp, P.mensagemProduto(p, { cupom: cupomGanho() }));
+    });
+  });
+
   try {
     const salvo = JSON.parse(localStorage.getItem(QB.pedido.chave) || 'null');
     if (salvo && Array.isArray(salvo.itens)) pedido = P.criarPedido(salvo.itens.filter((i) => porId[i.id]));
@@ -195,7 +213,8 @@
   }
 
   function renderPedido() {
-    const t = P.totais(pedido);
+    const cupom = cupomGanho();
+    const t = P.totais(pedido, cupom);
     $$('[data-contador]').forEach((el) => { el.textContent = t.qtd; el.dataset.n = t.qtd; });
     $$('[data-contador-sr]').forEach((el) => { el.textContent = t.qtd + (t.qtd === 1 ? ' item' : ' itens') + ' no pedido'; });
     const lista = $('#pedido-lista');
@@ -213,11 +232,20 @@
     }).join('');
     $('#pedido-vazio').hidden = pedido.itens.length > 0;
     $('#pedido-form').hidden = pedido.itens.length === 0;
-    $('#pedido-total').textContent = t.subtotal > 0 ? P.formatarPreco(t.subtotal) + (t.consulta ? ' +' : '') : (t.consulta ? 'Sob consulta' : 'R$ 0,00');
+    $('#pedido-cupom').hidden = !cupom;
+    $('#pedido-aplicar').hidden = !C.config || !!cupom;
+    $('#pedido-vazio-mimo').hidden = !cupom;
+    if (cupom) {
+      $('#pedido-cupom-cod').textContent = cupom.codigo + ' · ' + cupom.pct + '% na primeira compra';
+      $('#pedido-cupom-valor').textContent = t.desconto > 0 ? '− ' + P.formatarPreco(t.desconto) : 'no valor final';
+      $('#pedido-vazio-mimo').textContent = 'Seu desconto de ' + cupom.pct + '% já está guardado para o primeiro pedido.';
+    }
+    $('.pedido-total span').textContent = cupom && t.desconto > 0 ? 'Estimativa com desconto' : 'Estimativa';
+    $('#pedido-total').textContent = t.subtotal > 0 ? P.formatarPreco(t.total) + (t.consulta ? ' +' : '') : (t.consulta ? 'Sob consulta' : 'R$ 0,00');
     $('#pedido-nota').hidden = !t.consulta;
     const enviar = $('#pedido-enviar');
     if (pedido.itens.length) {
-      enviar.href = P.linkWhats(loja.whatsapp, P.mensagemPedido(pedido, { nome: $('#ped-nome').value, obs: $('#ped-obs').value, tecnicas: QB.tecnicas }));
+      enviar.href = P.linkWhats(loja.whatsapp, P.mensagemPedido(pedido, { nome: $('#ped-nome').value, obs: $('#ped-obs').value, tecnicas: QB.tecnicas, cupom }));
       enviar.removeAttribute('aria-disabled');
     } else {
       enviar.href = '#';
@@ -350,7 +378,7 @@
   function atualizarFicha() {
     const p = ficha.p;
     $('#ficha-preco').innerHTML = ficha.emb === 'Unidade' ? precoHTML(p.preco) : '<span class="preco preco--consulta">' + esc(ficha.emb) + ': sob consulta</span>';
-    $('#ficha-whats').href = P.linkWhats(loja.whatsapp, P.mensagemProduto(p, { cor: ficha.cor, embalagem: ficha.emb, nome: $('#ped-nome').value }));
+    $('#ficha-whats').href = P.linkWhats(loja.whatsapp, P.mensagemProduto(p, { cor: ficha.cor, embalagem: ficha.emb, nome: $('#ped-nome').value, cupom: cupomGanho() }));
   }
   $('#dlg-ficha').addEventListener('click', (e) => {
     const m = e.target.closest('[data-mini]');
@@ -532,7 +560,7 @@
     $('#est-preco').innerHTML = p ? precoHTML(p.preco) : '';
     const tmp = P.criarPedido();
     P.adicionar(tmp, itemEstudio());
-    $('#est-whats').href = P.linkWhats(loja.whatsapp, P.mensagemPedido(tmp, { nome: $('#ped-nome').value, tecnicas: QB.tecnicas }));
+    $('#est-whats').href = P.linkWhats(loja.whatsapp, P.mensagemPedido(tmp, { nome: $('#ped-nome').value, tecnicas: QB.tecnicas, cupom: cupomGanho() }));
   }
   form.addEventListener('change', (e) => {
     const t = e.target;

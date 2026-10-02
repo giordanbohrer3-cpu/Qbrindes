@@ -911,6 +911,154 @@ dialog::backdrop { background: rgba(6, 4, 31, .55); backdrop-filter: blur(6px); 
   .cat__seta { opacity: 1; transform: none; }
 }
 @media print {
-  .ilha, .dock, .demo-chip, .whats-flutuante, .hero__palco, .vitrine__tela, dialog { display: none !important; }
+  .ilha, .dock, .demo-chip, .whats-flutuante, .hero__palco, .vitrine__tela, .confete, dialog { display: none !important; }
 }
 .palco3d--estatico .estudio__girar, .palco3d--estatico .estudio__regravar { display: none; }
+
+/* =========================================================
+   Mimo — o cartão do desconto de primeira compra que sai do presente (js/mimo.js)
+   Repouso aqui; a saída é WAAPI (só transform e opacity). Posições vêm do JS em px do palco.
+   ========================================================= */
+.mimo { position: absolute; inset: 0; z-index: 3; pointer-events: none; --cw: 330px; --cl: 0px; --cb: 0px; --ch: 220px; --bx: 72%; --by: 57%; --face: 300px; }
+.mimo[hidden] { display: none; }
+/* Luzes da cena: só gradientes pintados uma vez; anima-se a opacidade */
+.mimo__luzes i { position: absolute; display: block; pointer-events: none; }
+.mimo__sala { left: var(--bx); top: var(--by); width: calc(var(--face) * 4.2); height: calc(var(--face) * 3.2); translate: -50% -50%; opacity: .8;
+  background: radial-gradient(closest-side, rgba(233, 199, 123, .14), rgba(233, 199, 123, .06) 45%, transparent); }
+.mimo__cone { left: var(--bx); top: calc(var(--by) - var(--face) * 1.9); width: calc(var(--face) * 1.3); height: calc(var(--face) * 1.9); translate: -50% 0; opacity: .4; mix-blend-mode: screen;
+  background: radial-gradient(50% 100% at 50% 100%, rgba(255, 214, 150, .42), rgba(255, 190, 110, .12) 45%, transparent 75%); }
+.mimo__boca { left: var(--bx); top: var(--by); width: calc(var(--face) * 1.7); height: calc(var(--face) * .62); translate: -50% -50%; opacity: .45; mix-blend-mode: screen;
+  background: radial-gradient(closest-side, rgba(255, 236, 190, .95), rgba(255, 186, 64, .55) 30%, rgba(255, 150, 40, .16) 62%, transparent); }
+.mimo__oclusao { left: calc(var(--cl) - 30px); bottom: calc(var(--cb) - 25px); width: calc(var(--cw) + 60px); height: calc(var(--ch) + 50px);
+  background: radial-gradient(closest-side, rgba(4, 2, 24, .38) 70%, transparent); }
+.mimo__rebate { left: calc(var(--cl) + var(--cw) / 2); bottom: calc(var(--cb) + var(--ch) * .32); width: calc(var(--cw) * 1.55); height: var(--cw); translate: -50% 50%; mix-blend-mode: screen;
+  background: radial-gradient(closest-side, rgba(255, 241, 215, .16), rgba(255, 241, 215, .05) 55%, transparent); }
+.mimo__sombra { left: calc(var(--cl) - var(--cw) * .03); bottom: calc(var(--cb) - 6px - max(7px, var(--cw) * .035)); width: calc(var(--cw) * 1.06); height: max(14px, calc(var(--cw) * .07));
+  background: radial-gradient(closest-side, rgba(4, 2, 24, .78), rgba(4, 2, 24, .32) 55%, transparent); }
+
+/* Cartão: cena (recorte do lábio na saída) › voo (trajetória) › inclina (ponteiro) › giro (virada) › faces */
+.mimo__cena { position: absolute; left: var(--cl); bottom: var(--cb); width: var(--cw); pointer-events: auto; }
+.mimo__voo { perspective: 1100px; }
+.mimo__inclina, .mimo__giro { transform-style: preserve-3d; }
+.mimo--inclinado .mimo__inclina { transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); transition: transform 120ms linear; }
+.mimo__inclina { transition: transform 600ms var(--ease); }
+.mimo__giro { display: grid; transition: transform 760ms var(--ease-io); }
+.mimo__giro:focus-visible { outline: 2px solid var(--ouro); outline-offset: 4px; border-radius: 12px; }
+.mimo--verso .mimo__giro { transform: rotateY(180deg); }
+.mimo--voando .mimo__voo, .mimo--voando .mimo__giro { will-change: transform; }
+.mimo__face { grid-area: 1 / 1; position: relative; border-radius: 12px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; }
+.mimo__verso { transform: rotateY(180deg); }
+
+/* Frente: papel algodão marfim com grão, borda dourada (clara em cima, onde a luz da caixa bate) */
+.mimo__frente {
+  container-type: inline-size;
+  display: grid; gap: 10px; padding: 16px 18px 14px; color: #120F2E; text-align: left;
+  border: 1.5px solid transparent;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .42 0 0 0 0 .33 0 0 0 0 .18 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E") padding-box,
+    linear-gradient(0deg, rgba(48, 36, 170, .10), rgba(48, 36, 170, .03) 26%, transparent 50%) padding-box,
+    radial-gradient(140% 100% at 50% 30%, transparent 62%, rgba(20, 8, 120, .07) 100%) padding-box,
+    linear-gradient(180deg, #FFF8EA, #FBEACB) padding-box,
+    linear-gradient(180deg, #FFE9B8 0%, #E9C77B 22%, #C9922E 60%, #8A5800 100%) border-box;
+  box-shadow: inset 0 1px 0 rgba(255, 240, 210, .95), 0 1px 1px rgba(6, 4, 31, .3), 0 18px 34px -16px rgba(6, 4, 31, .75);
+}
+.mimo__frente > :not(i) { position: relative; } /* acima das camadas de luz */
+.mimo__luz-topo, .mimo__luz-baixo, .mimo__brilho { position: absolute; inset: 0; pointer-events: none; border-radius: inherit; }
+.mimo__luz-topo { background: linear-gradient(180deg, rgba(255, 214, 140, .5) 0, rgba(255, 214, 140, .18) 4px, rgba(255, 224, 170, .1) 16%, transparent 36%); }
+.mimo__luz-baixo { opacity: 0; background: linear-gradient(0deg, rgba(255, 190, 90, .45) 0, rgba(255, 190, 90, .14) 30%, transparent 58%); }
+.mimo__brilho { opacity: 0; mix-blend-mode: soft-light; transition: opacity 400ms var(--ease); background: radial-gradient(45% 70% at var(--gx, 35%) var(--gy, 0%), rgba(255, 250, 236, .6), transparent 70%); }
+.mimo--inclinado .mimo__brilho { opacity: 1; }
+
+.mimo__selo { display: flex; align-items: center; gap: 8px; padding-right: 34px; font: 600 10.5px/1.2 var(--f-texto); letter-spacing: .2em; text-transform: uppercase; color: #8A5800; }
+.mimo__selo::before { content: ''; width: 18px; height: 1px; background: currentColor; }
+.mimo__titulo { display: grid; grid-template-columns: auto 1fr; column-gap: 12px; align-items: end; }
+.mimo__script { grid-column: 1 / -1; font: 400 27px/1 var(--f-script); color: #1408B8; margin-bottom: 2px; }
+/* "15%" em hot stamping: ouro mais claro em cima (luz da caixa), reflexo que atravessa uma vez e relevo */
+.mimo__num { font: 900 62px/.84 var(--f-display); letter-spacing: -.03em; font-variant-numeric: lining-nums; color: #8E5A0C;
+  background: linear-gradient(100deg, transparent 40%, rgba(255, 248, 225, .95) 48%, transparent 56%) 100% 0 / 300% 100% no-repeat,
+    linear-gradient(180deg, #B98226 0%, #A06A16 34%, #8A5800 62%, #966214 85%, #AE7A24 100%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 1px 0 rgba(255, 255, 255, .8)) drop-shadow(0 -.5px 0 rgba(90, 56, 6, .35)); }
+.mimo__num small { font-size: .5em; vertical-align: .82em; margin-left: .04em; letter-spacing: 0; }
+.mimo__linhas { display: grid; gap: 3px; padding-bottom: 4px; }
+.mimo__de { font: italic 600 21px/1 var(--f-display); color: #120F2E; }
+.mimo__compra { font: 500 13px/1.2 var(--f-texto); color: #55516B; }
+.mimo__codigo { display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 12px; border: 1px dashed #B8913F; border-radius: 10px; background: rgba(138, 88, 0, .05); }
+.mimo__rotulo { font: 600 10px/1 var(--f-texto); letter-spacing: .2em; text-transform: uppercase; color: #8A5800; }
+.mimo__cod { flex: 1; font: 700 15px/1 var(--f-texto); letter-spacing: .12em; color: #120F2E; user-select: all; }
+.mimo__copiar { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid #1408B8; color: #1408B8; font: 600 13px/1 var(--f-texto); transition: background-color var(--t2) var(--ease); }
+.mimo__copiar::after { content: ''; position: absolute; inset: -5px; } /* alvo de 44 px */
+.mimo__copiar svg { width: 15px; height: 15px; }
+.mimo__copiar:hover { background: rgba(20, 8, 184, .07); }
+.mimo__guardado { display: flex; align-items: center; gap: 6px; font: 600 12.5px/1.3 var(--f-texto); color: #1408B8; }
+.mimo__guardado svg { width: 14px; height: 14px; color: #A06A16; flex: none; }
+.so-cel { display: none; }
+@media (max-width: 900px) { .so-cel { display: inline; } }
+.mimo__rodape { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 2px 10px; }
+.mimo__validade { margin-top: -6px; font: 400 12px/1.4 var(--f-texto); color: #55516B; }
+.mimo__validade[hidden] { display: none; }
+.mimo__link { position: relative; font: 600 12px/1.4 var(--f-texto); color: #1408B8; text-decoration: underline; text-underline-offset: 2px; }
+.mimo__link::after { content: ''; position: absolute; inset: -12px -8px; }
+.mimo__frente :focus-visible { outline: 2px solid #1408B8; outline-offset: 2px; border-radius: 6px; }
+.mimo__fechar { position: absolute !important; top: 6px; right: 6px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; color: #55516B; transition: background-color var(--t2) var(--ease); }
+.mimo__fechar::after { content: ''; position: absolute; inset: -4px; }
+.mimo__fechar:hover { background: rgba(18, 15, 46, .06); }
+.mimo__fechar svg { width: 16px; height: 16px; }
+
+/* Verso: o mesmo papel ultramar da caixa, com o Q em ouro; vira para mostrar as condições */
+.mimo__verso { display: grid; place-items: center; padding: 16px 18px; color: #ECE8FF; border: 1.5px solid transparent;
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 7px) padding-box,
+    radial-gradient(130% 100% at 50% 0%, #2A1BFF 0%, #1408B8 40%, #0E0880 100%) padding-box,
+    linear-gradient(180deg, #FFE9B8 0%, #E9C77B 22%, #C9922E 60%, #8A5800 100%) border-box; }
+.mimo__selo-q { width: 56px; height: auto; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .35)); transition: opacity 300ms var(--ease); }
+.mimo__condicoes { position: absolute; inset: 0; display: grid; align-content: center; gap: 8px; padding: 18px 20px; visibility: hidden; opacity: 0; transition: opacity 300ms var(--ease) 200ms, visibility 0s 500ms; }
+.mimo--verso .mimo__condicoes { visibility: visible; opacity: 1; transition: opacity 300ms var(--ease) 300ms; }
+.mimo--verso .mimo__selo-q { opacity: .12; }
+.mimo__cond-titulo { font: 700 16px/1.2 var(--f-display); color: #FFF4DC; }
+.mimo__cond-texto { font: 400 12px/1.5 var(--f-texto); }
+.mimo__link--claro { justify-self: start; color: #F3D9A4; }
+.mimo__verso :focus-visible { outline: 2px solid var(--ouro); outline-offset: 2px; border-radius: 6px; }
+
+
+/* Celular: cartão compacto ("15%" à esquerda de duas linhas) */
+@media (max-width: 900px) {
+  .mimo__voo { perspective: 800px; }
+  .mimo__frente { gap: 8px; padding: 12px 14px 11px; }
+  .mimo__selo { display: none; }
+  .mimo__titulo { grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center; padding-right: 30px; }
+  .mimo__num { grid-row: 1 / 3; grid-column: 1; font-size: 54px; }
+  .mimo__script { grid-column: 2; font-size: 24px; margin: 0; }
+  .mimo__linhas { grid-column: 2; padding: 0; }
+  .mimo__de { font-size: 18px; }
+  .mimo__compra { font-size: 12.5px; }
+  .mimo__codigo { padding: 4px 4px 4px 10px; gap: 8px; }
+  .mimo__cod { font-size: 14px; letter-spacing: .1em; }
+  .mimo__copiar { height: 34px; padding: 0 12px; }
+  .mimo__fechar { top: 4px; right: 4px; }
+  .mimo__guardado { font-size: 12px; }
+  .hero[data-mimo] .hero__acao { bottom: -12px; } /* usa o respiro de 28 px do hero: o cartão desce e o "Seu nome" do copo fica à vista */
+}
+@container (max-width: 250px) { .mimo__rotulo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+
+@media (forced-colors: active) {
+  .mimo__num { -webkit-text-fill-color: CanvasText; color: CanvasText; background: none; filter: none; }
+  .mimo__face { border: 1px solid CanvasText; }
+  .mimo__luzes, .confete { display: none; }
+}
+
+/* Folhas do confete (js/confete.js): planos atrás e na frente do cartão */
+.confete { position: absolute; pointer-events: none; contain: strict; }
+.confete[hidden] { display: none; }
+
+/* Gaveta do pedido: cupom guardado, botão para aplicar e frase no pedido vazio */
+.pedido-cupom { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; border: 1px dashed color-mix(in srgb, var(--ouro-txt) 50%, transparent); background: color-mix(in srgb, var(--ouro) 8%, transparent); font-size: 13.5px; color: var(--fg); }
+.pedido-cupom[hidden] { display: none; }
+.pedido-cupom span { display: flex; align-items: center; gap: 8px; }
+.pedido-cupom svg { width: 18px; height: 18px; color: var(--accent-txt); flex: none; }
+.pedido-cupom strong { font: 700 14px/1 var(--f-texto); color: var(--accent-txt); white-space: nowrap; }
+.pedido-aplicar { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 8px 12px; margin-bottom: 8px; border-radius: 10px; border: 1px dashed var(--line-forte); color: var(--link); font: 600 13.5px/1.3 var(--f-texto); text-align: left; transition: background-color var(--t2) var(--ease); }
+.pedido-aplicar[hidden] { display: none; }
+.pedido-aplicar:hover { background: color-mix(in srgb, var(--ouro) 8%, transparent); }
+.pedido-aplicar svg { width: 18px; height: 18px; color: var(--accent-txt); flex: none; }
+.pedido-vazio__mimo { max-width: 30ch; font-size: 14px; color: var(--fg); }
+.pedido-vazio__mimo[hidden] { display: none; }

@@ -57,6 +57,10 @@
     artesanal: [332038, 331954, 331989, 332054, 331969],
     galeria: ['145145-0', '332054-0', '374763-0', '146667-0', '331954-1', '148805-1', '331989-0', '332038-0'],
 
-    pedido: { chave: 'qb-pedido-v1' }
+    pedido: { chave: 'qb-pedido-v1' },
+
+    // Cupom revelado ao abrir o presente do topo. Oferta publicada vincula a loja (CDC, art. 30):
+    // confirmar com o cliente antes de publicar. ativo: false some com o cupom do site inteiro.
+    cupom: { ativo: true, pct: 15, codigo: 'PRESENTE15', chave: 'qb-cupom-v1' }
   };
 })();

@@ -24,6 +24,8 @@
 @keyframes flutua { 50% { transform: translateY(-5px); } }
 @keyframes respira-luz { from { opacity: .5; } to { opacity: 1; } }
 .motion-on .hero[data-estado="fim"] .hero__depois { animation: sobe 520ms var(--ease) backwards; }
+/* Com o cartão do desconto voando, os botões do fim esperam o pouso (js/mimo.js troca data-mimo para "on") */
+.motion-on .hero[data-estado][data-mimo="chegando"] .hero__depois { animation: none; opacity: 0; pointer-events: none; }
 .anim-off .hero__flutua, .anim-off .hero__palco::after { animation-play-state: paused !important; }
 
 /* ---------- Revelações ao rolar ---------- */

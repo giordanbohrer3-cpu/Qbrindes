@@ -36,9 +36,15 @@
     const final = $('.hero__final', hero);
     const movel = matchMedia('(max-width: 900px)');
     let variante = '', url = '', blob = '', baixando = null, cues = [], proximoCue = 0;
-    let estado = 'fechado', jaTocou = false, timer = 0;
+    let estado = 'fechado', jaTocou = false, timer = 0, revelou = false, gesto = false, teclado = false;
 
     function definir(e) { estado = e; hero.dataset.estado = e; }
+    // Avisa o cupom (js/cupom.js): 'revelar' uma vez por abertura, 'fechar' ao ver de novo
+    function presente(fase) {
+      if (fase === 'revelar') { if (revelou) return; revelou = true; }
+      else revelou = false; // 'tocando' e 'fechar' preparam a próxima revelação
+      document.dispatchEvent(new CustomEvent('qb:presente', { detail: { fase, movimento: ligado(), gesto, teclado } }));
+    }
     function escolher() {
       const v = M.varianteHero(window.innerWidth);
       if (v === variante) return;
@@ -55,7 +61,7 @@
     fetch(BASE + 'hero.json' + V).then((r) => (r.ok ? r.json() : null)).then((j) => {
       if (!j || !j.cues) return;
       const c = j.cues;
-      cues = [[c.laco, () => som('virada')], [c.ouro, () => som('brilho')], [c.produtos, () => som('virada')], [c.laser, () => laser(true)], [c.laserFim, () => laser(false)]]
+      cues = [[c.laco, () => som('virada')], [c.ouro, () => som('brilho')], [c.produtos, () => som('virada')], [c.laser, () => laser(true)], [c.laserFim, () => laser(false)], [M.momentoMimo(c), () => presente('revelar')]]
         .filter((x) => typeof x[0] === 'number').sort((a, b) => a[0] - b[0]);
     }).catch(() => {});
 
@@ -87,11 +93,14 @@
       if (final.complete) requestAnimationFrame(on); else final.addEventListener('load', on, { once: true });
     }
 
-    function tocar() {
+    // e: o clique (gesto da pessoa; detail 0 = teclado) ou nada (sozinho após 4 s)
+    function tocar(e) {
       if (estado === 'tocando') return;
       clearTimeout(timer);
       jaTocou = true;
-      if (!ligado()) { mostrarFinal(); definir('fim'); return; } // sem movimento: vai direto ao presente aberto
+      gesto = !!(e && e.type === 'click');
+      teclado = gesto && e.detail === 0;
+      if (!ligado()) { mostrarFinal(); definir('fim'); presente('revelar'); return; } // sem movimento: vai direto ao presente aberto
       if (baixando && !blob) { baixando.abort(); baixando = null; }
       const src = blob || url;
       if (video.getAttribute('src') !== src) video.src = src;
@@ -102,15 +111,16 @@
         definir('tocando');
         final.classList.remove('on');
         if (temRVFC) { if (idCue) video.cancelVideoFrameCallback(idCue); idCue = video.requestVideoFrameCallback(vigiarCues); }
+        presente('tocando');
       });
       if (p && p.catch) p.catch(() => { if (estado !== 'tocando') definir('fechado'); }); // autoplay bloqueado (ex.: modo de economia do iPhone): o botão continua
     }
-    video.addEventListener('ended', () => { definir('fim'); laser(false); });
-    video.addEventListener('error', () => { if (estado === 'tocando') { mostrarFinal(); definir('fim'); } });
+    video.addEventListener('ended', () => { definir('fim'); laser(false); presente('revelar'); });
+    video.addEventListener('error', () => { if (estado === 'tocando') { mostrarFinal(); definir('fim'); presente('revelar'); } });
 
     $('[data-abrir-presente]', hero).addEventListener('click', tocar);
-    $('[data-rever]', hero).addEventListener('click', () => { final.classList.remove('on'); definir('fechado'); tocar(); });
-    $('.hero__flutua', hero).addEventListener('click', () => { if (estado === 'fechado') tocar(); });
+    $('[data-rever]', hero).addEventListener('click', (e) => { final.classList.remove('on'); presente('fechar'); definir('fechado'); tocar(e); });
+    $('.hero__flutua', hero).addEventListener('click', (e) => { if (estado === 'fechado') tocar(e); });
 
     // Sozinho após 4 s com o topo visível e sem interação (uma vez só)
     function agendar(visivel) {
@@ -120,7 +130,7 @@
     let heroVisivel = false;
     new IntersectionObserver(([en]) => { heroVisivel = en.isIntersecting; agendar(heroVisivel); }, { threshold: 0.6 }).observe($('#palco-hero'));
     document.addEventListener('visibilitychange', () => agendar(heroVisivel));
-    document.addEventListener('qb:motion', (e) => { if (!e.detail && estado === 'tocando') { video.pause(); laser(false); mostrarFinal(); definir('fim'); } agendar(heroVisivel); });
+    document.addEventListener('qb:motion', (e) => { if (!e.detail && estado === 'tocando') { video.pause(); laser(false); mostrarFinal(); definir('fim'); presente('revelar'); } agendar(heroVisivel); });
     window.QBHero = { tocar, estado: () => estado, variante: () => variante };
   }
 

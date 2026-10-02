@@ -91,7 +91,9 @@
     adicionar: () => { tom(392, 0.04, 0.12); tom(523, 0.035, 0.16, 0.07); },
     hover: () => filtroRuido('bandpass', 420, 1150, 0, 0.022, 0.17, 1.4),
     virada: () => filtroRuido('bandpass', 900, 2200, 1200, 0.012, 0.36, 0.9),
-    brilho: () => { tom(1046, 0.012, 0.5); tom(1318, 0.009, 0.6, 0.06); tom(1568, 0.007, 0.7, 0.12); }
+    brilho: () => { tom(1046, 0.012, 0.5); tom(1318, 0.009, 0.6, 0.06); tom(1568, 0.007, 0.7, 0.12); },
+    // Pouso do cartão do desconto: um toque grave de papel, no limite do perceptível
+    pouso: () => { tom(196, 0.016, 0.16); filtroRuido('lowpass', 900, 400, 0, 0.006, 0.12, 0.7); }
   };
 
   function tocar(nome) {

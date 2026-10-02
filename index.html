@@ -303,7 +303,9 @@
             <input id="est-foto" class="sr" type="file" accept="image/*">
             <button class="btn btn--contorno btn--p" type="button" data-foto-exemplo>Usar exemplo</button>
           </div>
-          <p class="nota">A foto fica só no seu aparelho. Para o pedido, você manda ela no WhatsApp.</p>
+          <label class="interruptor"><input type="checkbox" id="est-sem-fundo" checked><span class="interruptor__trilho" aria-hidden="true"></span><span>Tirar o fundo da foto</span></label>
+          <p class="nota foto-status" id="est-foto-status" aria-live="polite"></p>
+          <p class="nota">A foto fica só no seu aparelho: o recorte é feito aqui mesmo. Para o pedido, você manda ela no WhatsApp.</p>
         </div>
         <fieldset class="opcoes opcoes--cor">
           <legend>Cor do produto</legend>
@@ -439,7 +441,7 @@
 <!-- ===================== SOBRE ===================== -->
 <section class="sec sec--seda sobre" id="sobre" aria-labelledby="sobre-titulo">
   <div class="wrap sobre__grade">
-    <figure class="sobre__foto" data-reveal="clip"><img src="assets/produtos/148273-0-800.webp" alt="Kit churrasco de 10 peças em estojo aberto" width="800" height="1000" loading="lazy" decoding="async"></figure>
+    <figure class="sobre__foto" data-reveal="clip"><img src="assets/produtos/148273-0-800.webp?v=3" alt="Kit churrasco de 10 peças em estojo aberto" width="800" height="1000" loading="lazy" decoding="async"></figure>
     <div class="sobre__texto">
       <p class="eyebrow">Sobre a QBrindes</p>
       <h2 id="sobre-titulo" data-reveal="titulo">Presente bom é o que <em>tem dono</em></h2>

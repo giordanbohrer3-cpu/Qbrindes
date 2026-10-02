@@ -1,0 +1,3 @@
+selfie_segmenter.tflite — modelo de segmentação de pessoas do MediaPipe (Google), licença Apache 2.0.
+Fonte: https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_segmenter/float16/latest/selfie_segmenter.tflite
+Usado só no estúdio, para tirar o fundo da foto do cliente no próprio aparelho (js/recorte-foto.js).

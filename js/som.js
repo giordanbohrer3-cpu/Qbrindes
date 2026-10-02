@@ -4,6 +4,7 @@
   'use strict';
 
   const html = document.documentElement;
+  const TOQUE = matchMedia('(hover: none), (pointer: coarse)').matches;
   const AC = window.AudioContext || window.webkitAudioContext;
   let ligado = true;
   try { ligado = localStorage.getItem('qb-som') !== 'off'; } catch (e) { /* ok */ }
@@ -20,8 +21,8 @@
     clickBus = ctx.createBiquadFilter(); clickBus.type = 'lowpass'; clickBus.frequency.value = 1400;
     clickBus.connect(comp);
     ctx._entrada = comp;
-    // Partes pesadas depois do clique, para não atrasar a resposta.
-    setTimeout(montarPesado, 120);
+    // Partes pesadas (buffers de ruído e reverberação) só quando o navegador estiver ocioso.
+    if ('requestIdleCallback' in window) requestIdleCallback(montarPesado, { timeout: 1500 }); else setTimeout(montarPesado, 300);
   }
 
   function bufferRuido(seg) {
@@ -175,8 +176,8 @@
   function montarTrilha() {
     const bus = ctx.createGain(); bus.gain.value = 0.0001;
     const seco = ctx.createGain(); seco.gain.value = 0.55;
-    const rev = ctx.createConvolver(); rev.buffer = reverbIR(2.8);
-    const molhado = ctx.createGain(); molhado.gain.value = 0.9;
+    const rev = ctx.createConvolver(); rev.buffer = reverbIR(0.8);
+    const molhado = ctx.createGain(); molhado.gain.value = 0.75;
     bus.connect(seco); seco.connect(ctx._entrada);
     bus.connect(rev); rev.connect(molhado); molhado.connect(ctx._entrada);
     trilha = { bus, proximo: ctx.currentTime + 0.5, indice: 0, timer: 0 };
@@ -211,8 +212,9 @@
       const [baixo, vozes, violino] = ACORDES[trilha.indice % ACORDES.length];
       const t = trilha.proximo;
       voz(hz(baixo), t, 9, 0.0045, 380, 2);
-      vozes.forEach((m) => voz(hz(m), t, 9, 0.002, 1100, 2.5));
-      if (violino && trilha.indice % 2 === 0) voz(hz(violino), t + 0.6, 8.4, 0.0013, 1700, 1.8);
+      // no celular, no máximo 3 vozes por acorde (cada voz são 2 osciladores)
+      (TOQUE ? [vozes[0], vozes[2]] : vozes).forEach((m) => voz(hz(m), t, 9, TOQUE ? 0.0026 : 0.002, 1100, 2.5));
+      if (!TOQUE && violino && trilha.indice % 2 === 0) voz(hz(violino), t + 0.6, 8.4, 0.0013, 1700, 1.8);
       trilha.indice++;
       trilha.proximo += 9 - 5.5;
     }
@@ -256,7 +258,7 @@
   });
 
   /* ---------- Gatilhos ---------- */
-  const SELETOR_HOVER = 'button, .btn, [role="button"], .chip, .topo__busca, .icone, .cat, .ocasiao, .opcoes label';
+  const SELETOR_HOVER = 'button, .btn, [role="button"], .chip, .icone, .cat, .ocasiao, .opcoes label';
   let ultimoHover = 0, ultimoAlvo = null;
   if (matchMedia('(hover: hover) and (pointer: fine)').matches) {
     document.addEventListener('pointerover', (e) => {
@@ -276,8 +278,6 @@
     if (!alvo || alvo.matches('[data-som-toggle], [data-add], [data-chip], [data-theme-toggle], [data-motion-toggle], [data-cor], [data-termo], [data-item-qtd], [data-qtd], [data-remover], [data-ficha-cor], [data-ficha-emb]')) return;
     tocar('clique');
   });
-  document.addEventListener('qb:etapa', () => tocar('virada'));
-  document.addEventListener('qb:confete', () => tocar('brilho'));
   document.addEventListener('qb:laser', (e) => laser(!!(e.detail && e.detail.on)));
 
   window.QBSom = { tocar, laser, get ligado() { return ligado; }, definir, _ctx: () => ctx };

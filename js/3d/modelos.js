@@ -15,21 +15,36 @@ export const M = {
   cromo: () => new THREE.MeshPhysicalMaterial({ color: 0xf5f6f9, metalness: 1, roughness: 0.07 }),
   plastico: (cor, extra) => new THREE.MeshPhysicalMaterial(Object.assign({ color: cor, roughness: 0.38, clearcoat: 0.3, clearcoatRoughness: 0.4 }, extra)),
   borracha: () => new THREE.MeshStandardMaterial({ color: 0x18181d, roughness: 0.92 }),
-  ceramica: (cor) => new THREE.MeshPhysicalMaterial({ color: cor, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1 }),
-  fita: () => new THREE.MeshPhysicalMaterial({ color: 0xe8b23a, metalness: 0.5, roughness: 0.3, sheen: 1, sheenColor: 0xfff0c0, sheenRoughness: 0.35, clearcoat: 0.5 })
+  ceramica: (cor) => new THREE.MeshPhysicalMaterial({ color: cor, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.1 })
 };
 
 /* Material da marca gravada: 'aco' (laser tira a pintura e mostra o inox), 'escuro' (laser no inox),
    'madeira' (queimado) e 'cor' (estampa colorida). */
 export function matGravura(tipo, gravura) {
   const comum = { transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2, side: THREE.DoubleSide };
-  if (tipo === 'cor') return new THREE.MeshPhysicalMaterial(Object.assign({ map: gravura.textura, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.1 }, comum));
+  if (tipo === 'cor') return revelavel(new THREE.MeshPhysicalMaterial(Object.assign({ map: gravura.textura, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.1 }, comum)), gravura);
   const base = {
     aco: { color: 0xe7e9ee, metalness: 1, roughness: 0.32 },
     escuro: { color: 0x2a2c33, metalness: 0.45, roughness: 0.55 },
     madeira: { color: 0x3b2110, metalness: 0, roughness: 1 }
   }[tipo];
-  return new THREE.MeshPhysicalMaterial(Object.assign({ alphaMap: gravura.textura, emissive: 0xff6a2a, emissiveMap: gravura.textura, emissiveIntensity: 0 }, base, comum));
+  return revelavel(new THREE.MeshPhysicalMaterial(Object.assign({ alphaMap: gravura.textura, emissive: 0xff6a2a, emissiveMap: gravura.textura, emissiveIntensity: 0 }, base, comum)), gravura);
+}
+/* A gravura aparece até o corte (uCorte), sem redesenhar a textura: o laser só move um uniform. */
+function revelavel(mat, gravura) {
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uCorte = gravura.corte;
+    sh.fragmentShader = 'uniform vec3 uCorte;\n' + sh.fragmentShader.replace('#include <alphamap_fragment>', `#include <alphamap_fragment>
+      #ifdef USE_ALPHAMAP
+        vec2 uvCorte = vAlphaMapUv;
+      #else
+        vec2 uvCorte = vMapUv;
+      #endif
+      float eixoCorte = uCorte.y < 0.5 ? uvCorte.x : (uCorte.y < 1.5 ? uvCorte.y : 1.0 - uvCorte.y);
+      diffuseColor.a *= 1.0 - smoothstep(uCorte.x - 0.0015, uCorte.x + 0.0015, eixoCorte);`);
+  };
+  mat.customProgramCacheKey = () => 'gravura-corte';
+  return mat;
 }
 
 const _p = new THREE.Vector3();
@@ -338,81 +353,141 @@ export function criarTabua() {
   return g;
 }
 
-/* ================= Caixa de presente (hero) ================= */
-function texturaPapel() {
+/* ================= Caixa de presente (vídeo do hero) =================
+   Papel ultramar fosco com o Q da marca em verniz localizado (só aparece no reflexo),
+   fita de cetim champanhe em quatro braços que se soltam, laço e a boca iluminada. */
+function uvPlanar(geo, escala) {
+  // UV por projeção na face dominante, em unidades do mundo: o padrão não estica em faces de tamanhos diferentes.
+  const pos = geo.attributes.position, nor = geo.attributes.normal, uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+    const ax = Math.abs(nor.getX(i)), ay = Math.abs(nor.getY(i)), az = Math.abs(nor.getZ(i));
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    if (ax >= ay && ax >= az) uv.setXY(i, z * Math.sign(nor.getX(i)) * escala, y * escala);
+    else if (ay >= az) uv.setXY(i, x * escala, z * escala);
+    else uv.setXY(i, -x * Math.sign(nor.getZ(i)) * escala, y * escala);
+  }
+  uv.needsUpdate = true;
+  return geo;
+}
+/* Fita plana ao longo de uma curva (pontos [x,y] no plano XY ou [x,y,z]); a largura fica no eixo dado. */
+function fitaCurva(pontos, largura, fechada = false, eixo = 'z') {
+  const curva = new THREE.CatmullRomCurve3(pontos.map((p) => new THREE.Vector3(p[0], p[1], p[2] || 0)), fechada, 'catmullrom', 0.5);
+  const n = 64, lado = eixo === 'z' ? new THREE.Vector3(0, 0, 1) : new THREE.Vector3(1, 0, 0);
+  const pos = [], idx = [], uv = [];
+  for (let i = 0; i <= n; i++) {
+    const p = curva.getPointAt((i / n) % 1);
+    for (const sgn of [-0.5, 0.5]) { pos.push(p.x + lado.x * largura * sgn, p.y + lado.y * largura * sgn, p.z + lado.z * largura * sgn); uv.push(sgn + 0.5, i / n); }
+    if (i < n) { const k = i * 2; idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2); }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return geo;
+}
+function texturaMonograma() {
   const c = document.createElement('canvas');
   c.width = c.height = 512;
   const g = c.getContext('2d');
-  const gr = g.createLinearGradient(0, 0, 512, 512);
-  gr.addColorStop(0, '#1206b0'); gr.addColorStop(1, '#0a0478');
-  g.fillStyle = gr; g.fillRect(0, 0, 512, 512);
-  const estrela = (x, y, r) => {
-    g.beginPath();
-    g.moveTo(x, y - r); g.quadraticCurveTo(x, y, x + r, y); g.quadraticCurveTo(x, y, x, y + r); g.quadraticCurveTo(x, y, x - r, y); g.quadraticCurveTo(x, y, x, y - r);
-    g.fill();
-  };
-  for (let yy = 0; yy < 8; yy++) {
-    for (let xx = 0; xx < 8; xx++) {
-      const x = xx * 64 + (yy % 2 ? 32 : 0) + 16, y = yy * 64 + 20;
-      g.fillStyle = 'rgba(255,200,87,.85)'; estrela(x, y, 9);
-      g.fillStyle = 'rgba(255,255,255,.35)'; g.beginPath(); g.arc(x + 30, y + 32, 2, 0, 6.3); g.fill();
-    }
-  }
+  g.fillStyle = 'rgb(0,166,0)'; // rugosidade ~0,65 (papel fosco)
+  g.fillRect(0, 0, 512, 512);
+  g.fillStyle = 'rgb(0,128,0)'; // ~0,5 (verniz localizado: só aparece no reflexo)
+  g.font = '600 96px Playfair, Georgia, serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  [[128, 128], [384, 384]].forEach(([x, y]) => g.fillText('Q', x, y));
   const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 4;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.anisotropy = 8;
   return t;
 }
 export function criarCaixa() {
   const g = new THREE.Group();
   g.name = 'caixa';
-  const papel = new THREE.MeshPhysicalMaterial({ map: texturaPapel(), roughness: 0.5, clearcoat: 0.4, clearcoatRoughness: 0.25, envMapIntensity: 0.45 });
-  const fita = M.fita();
-  const B = 1.7, A = 1.25;
-  const corpo = new THREE.Group();
-  corpo.add(new THREE.Mesh(new THREE.RoundedBoxGeometry(B, A, B, 4, 0.05), papel));
-  const fitasCorpo = new THREE.Group();
-  fitasCorpo.add(new THREE.Mesh(new THREE.BoxGeometry(0.26, A + 0.004, B + 0.014), fita), new THREE.Mesh(new THREE.BoxGeometry(B + 0.014, A + 0.004, 0.26), fita));
-  corpo.add(fitasCorpo);
+  const papel = new THREE.MeshPhysicalMaterial({ color: 0x090748, roughness: 1, roughnessMap: texturaMonograma(), metalness: 0, sheen: 0.3, sheenColor: 0x2c2690, sheenRoughness: 0.8, envMapIntensity: 0.35 });
+  const fita = new THREE.MeshPhysicalMaterial({ color: 0xd9ad5c, metalness: 0.35, roughness: 0.36, sheen: 0.6, sheenColor: 0xffe7b8, sheenRoughness: 0.35, envMapIntensity: 0.9, side: THREE.DoubleSide, transparent: true, opacity: 1 });
+  const B = 1.7, A = 1.25, LT = 1.79, AT = 0.3, SOB = 0.08, LF = 0.24, EF = 0.008;
+  const topoCorpo = A - SOB;
+  const corpo = new THREE.Mesh(uvPlanar(new THREE.RoundedBoxGeometry(B, A, B, 5, 0.035), 1.5), papel);
   corpo.position.y = A / 2;
-  // "Boca" escura da caixa, aparece quando a tampa sobe
-  const cb = document.createElement('canvas'); cb.width = cb.height = 128;
+  // Boca: interior escuro com a luz quente no fundo (aparece quando a tampa sobe)
+  const cb = document.createElement('canvas'); cb.width = cb.height = 256;
   const gb = cb.getContext('2d');
-  const rg = gb.createRadialGradient(64, 64, 4, 64, 64, 80);
-  rg.addColorStop(0, '#ffcf7a'); rg.addColorStop(0.35, '#3a1f6a'); rg.addColorStop(1, '#0a0630');
-  gb.fillStyle = rg; gb.fillRect(0, 0, 128, 128);
-  const boca = new THREE.Mesh(new THREE.PlaneGeometry(B - 0.08, B - 0.08), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cb), toneMapped: false }));
-  boca.rotation.x = -Math.PI / 2; boca.position.y = A + 0.003;
+  const rg = gb.createRadialGradient(128, 128, 6, 128, 128, 150);
+  rg.addColorStop(0, '#fff1c8'); rg.addColorStop(0.22, '#ffc35c'); rg.addColorStop(0.55, '#6a3a3a'); rg.addColorStop(1, '#0b0733');
+  gb.fillStyle = rg; gb.fillRect(0, 0, 256, 256);
+  const texBoca = new THREE.CanvasTexture(cb); texBoca.colorSpace = THREE.SRGBColorSpace;
+  const boca = new THREE.Mesh(new THREE.PlaneGeometry(B - 0.07, B - 0.07), new THREE.MeshBasicMaterial({ map: texBoca, toneMapped: false, transparent: true, opacity: 0 }));
+  boca.rotation.x = -Math.PI / 2; boca.position.y = A + 0.002;
+
   const tampa = new THREE.Group();
-  const LT = 1.84, AT = 0.34;
-  tampa.add(new THREE.Mesh(new THREE.RoundedBoxGeometry(LT, AT, LT, 4, 0.05), papel));
-  const fitasTampa = new THREE.Group();
-  fitasTampa.add(new THREE.Mesh(new THREE.BoxGeometry(0.26, AT + 0.006, LT + 0.012), fita), new THREE.Mesh(new THREE.BoxGeometry(LT + 0.012, AT + 0.006, 0.26), fita));
-  tampa.add(fitasTampa);
-  // Laço
+  tampa.add(new THREE.Mesh(uvPlanar(new THREE.RoundedBoxGeometry(LT, AT, LT, 5, 0.035), 1.5), papel));
+  tampa.position.y = topoCorpo + AT / 2;
+
+  /* Fita: quatro braços em L (lateral do corpo + lateral da tampa + metade do topo), pivô na aresta de baixo */
+  const bracos = [0, 1, 2, 3].map((k) => {
+    const ang = k * Math.PI / 2;
+    const pivo = new THREE.Group();
+    pivo.rotation.y = ang;
+    const braco = new THREE.Group();
+    braco.position.z = B / 2;
+    const lateral = new THREE.Mesh(new THREE.BoxGeometry(LF, topoCorpo, EF), fita);
+    lateral.position.set(0, topoCorpo / 2, EF / 2);
+    const lateralTampa = new THREE.Mesh(new THREE.BoxGeometry(LF, AT + EF, EF), fita);
+    lateralTampa.position.set(0, topoCorpo + AT / 2, (LT - B) / 2 + EF / 2);
+    const topo = new THREE.Mesh(new THREE.BoxGeometry(LF, EF, LT / 2), fita);
+    topo.position.set(0, topoCorpo + AT + EF / 2, (LT - B) / 2 - LT / 4);
+    braco.add(lateral, lateralTampa, topo);
+    pivo.add(braco);
+    g.add(pivo);
+    return { pivo, braco };
+  });
+
+  // Laço de cetim: alças e pontas são fitas planas (tira com largura), não tubos
   const laco = new THREE.Group();
-  const alcaGeo = new THREE.TorusGeometry(0.27, 0.075, 14, 44);
-  const esq = new THREE.Mesh(alcaGeo, fita); esq.scale.set(1, 0.62, 0.5); esq.position.set(-0.27, 0.15, 0); esq.rotation.set(0, 0.25, 0.32);
-  const dir = new THREE.Mesh(alcaGeo, fita); dir.scale.set(1, 0.62, 0.5); dir.position.set(0.27, 0.15, 0); dir.rotation.set(0, -0.25, -0.32);
-  const no = new THREE.Mesh(new THREE.SphereGeometry(0.12, 20, 16), fita); no.scale.set(1.15, 0.85, 0.95); no.position.y = 0.06;
-  const pontaA = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.014, 0.6), fita); pontaA.position.set(0.16, 0.0, 0.26); pontaA.rotation.y = 0.45;
-  const pontaB = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.014, 0.6), fita); pontaB.position.set(-0.16, 0.0, 0.26); pontaB.rotation.y = -0.45;
+  const alcaGeo = fitaCurva([[0, 0], [0.12, 0.2], [0.3, 0.4], [0.5, 0.42], [0.58, 0.26], [0.45, 0.08], [0.2, 0.0]], 0.2, true);
+  const esq = new THREE.Group(), dir = new THREE.Group();
+  const alcaE = new THREE.Mesh(alcaGeo, fita); alcaE.scale.x = -1;
+  esq.add(alcaE); dir.add(new THREE.Mesh(alcaGeo, fita));
+  // alças menores por dentro deixam o laço cheio
+  const alcaE2 = new THREE.Mesh(alcaGeo, fita); alcaE2.scale.set(-0.72, 0.8, 0.72); alcaE2.rotation.set(0.25, 0.95, 0.1);
+  const alcaD2 = new THREE.Mesh(alcaGeo, fita); alcaD2.scale.set(0.72, 0.8, 0.72); alcaD2.rotation.set(0.25, -0.95, -0.1);
+  esq.add(alcaE2); dir.add(alcaD2);
+  esq.position.y = dir.position.y = 0.07;
+  esq.rotation.set(-0.22, -0.38, 0.12); dir.rotation.set(-0.22, 0.38, -0.12);
+  const no = new THREE.Mesh(new THREE.RoundedBoxGeometry(0.2, 0.15, 0.22, 3, 0.05), fita); no.position.y = 0.075;
+  const pontaGeo = fitaCurva([[0, 0, 0], [0.04, -0.02, 0.2], [0.1, -0.06, 0.42], [0.15, -0.075, 0.62]], 0.17, false, 'y');
+  const pontaA = new THREE.Mesh(pontaGeo, fita); pontaA.rotation.y = 0.5;
+  const pontaB = new THREE.Mesh(pontaGeo, fita); pontaB.rotation.y = -0.5; pontaB.scale.x = -1;
+  pontaA.position.y = pontaB.position.y = 0.02;
   laco.add(esq, dir, no, pontaA, pontaB);
-  laco.position.y = AT / 2;
-  tampa.add(laco);
-  tampa.position.y = A + AT / 2 - 0.08;
-  // Luz que sai da caixa (iluminação indireta + raios aditivos)
-  const cr = document.createElement('canvas'); cr.width = 4; cr.height = 128;
+  laco.position.y = topoCorpo + AT + EF;
+
+  // Luz que sai da caixa: feixe macio (plano que a cena vira para a câmera) e luz pontual
+  const cr = document.createElement('canvas'); cr.width = 128; cr.height = 256;
   const gr2 = cr.getContext('2d');
-  const lg = gr2.createLinearGradient(0, 0, 0, 128);
-  lg.addColorStop(0, 'rgba(255,200,120,0)'); lg.addColorStop(0.7, 'rgba(255,190,90,.35)'); lg.addColorStop(1, 'rgba(255,214,140,.85)');
-  gr2.fillStyle = lg; gr2.fillRect(0, 0, 4, 128);
-  const raios = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 0.72, 2.6, 40, 1, true), new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(cr), transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
-  raios.position.y = A + 1.3;
-  const luzInterna = new THREE.PointLight(0xffb84d, 0, 6, 1.6);
-  luzInterna.position.y = A + 0.4;
-  g.add(corpo, boca, tampa, raios, luzInterna);
-  g.userData = { partes: { corpo, fitasCorpo, boca, tampa, fitasTampa, laco, esq, dir, no, pontaA, pontaB, raios, luzInterna }, A, AT };
+  const img = gr2.createImageData(128, 256);
+  for (let y = 0; y < 256; y++) {
+    const v = y / 255; // 0 = alto, 1 = boca
+    const sobe = Math.pow(v, 1.5) * Math.min(1, (1 - v) / 0.1);
+    for (let x = 0; x < 128; x++) {
+      const u = (x / 127 - 0.5) * 2;
+      const larg = 0.52 + 0.4 * (1 - v);
+      const a = Math.exp(-(u * u) / (2 * larg * larg * 0.18)) * sobe;
+      const i = (y * 128 + x) * 4;
+      img.data[i] = 255; img.data[i + 1] = 214 + 30 * v; img.data[i + 2] = 150 + 60 * v; img.data[i + 3] = Math.round(a * 255);
+    }
+  }
+  gr2.putImageData(img, 0, 0);
+  const texRaios = new THREE.CanvasTexture(cr); texRaios.colorSpace = THREE.SRGBColorSpace;
+  const raiosGeo = new THREE.PlaneGeometry(2.4, 3.6);
+  raiosGeo.translate(0, 1.8, 0);
+  const raios = new THREE.Mesh(raiosGeo, new THREE.MeshBasicMaterial({ map: texRaios, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  raios.position.y = A - 0.1;
+  const luzInterna = new THREE.PointLight(0xffc066, 0, 7, 1.5);
+  luzInterna.position.y = A + 0.45;
+  g.add(corpo, boca, tampa, laco, raios, luzInterna);
+  g.userData = { partes: { corpo, boca, tampa, laco, esq, dir, no, pontaA, pontaB, raios, luzInterna, bracos }, materiais: { papel, fita }, A, AT, B, topo: topoCorpo + AT };
   return g;
 }
 

@@ -20,7 +20,9 @@ export function fontesProntas() {
   return _fontes;
 }
 
-/* Uma superfície gravável. modo 'mascara' (branco = gravado, para alphaMap) ou 'cor' (mapa colorido com transparência). */
+/* Uma superfície gravável. modo 'mascara' (branco = gravado, para alphaMap) ou 'cor' (mapa colorido com transparência).
+   A arte é desenhada UMA vez (inteira); o avanço do laser é só um uniform (uCorte) que o shader usa para revelar,
+   então gravar não reenvia a textura a cada quadro. */
 export class Gravura {
   constructor(w, h, { vertical = false, modo = 'mascara' } = {}) {
     this.w = w; this.h = h; this.vertical = vertical; this.modo = modo;
@@ -28,17 +30,21 @@ export class Gravura {
     this.canvas.width = w; this.canvas.height = h;
     this.ctx = this.canvas.getContext('2d');
     this.textura = new THREE.CanvasTexture(this.canvas);
-    this.textura.anisotropy = 4;
+    this.textura.anisotropy = 8;
     if (modo === 'cor') this.textura.colorSpace = THREE.SRGBColorSpace;
-    this.fonte = null; // conteúdo atual
+    this.corte = { value: new THREE.Vector3(1, 0, 0) }; // x = até onde revela (0–1), y = eixo (0: u, 1: v, 2: 1 - v)
+    this.chave = null; // conteúdo desenhado agora
     this.limpar();
   }
+  /* Revela até 'k' no eixo de leitura; 'eixo' segue a orientação da arte */
+  _revelar(k, eixo) { this.corte.value.set(k, eixo, 0); }
   limpar() {
     const g = this.ctx;
     g.setTransform(1, 0, 0, 1, 0, 0);
     if (this.modo === 'mascara') { g.fillStyle = '#000'; g.fillRect(0, 0, this.w, this.h); }
     else g.clearRect(0, 0, this.w, this.h);
     this.textura.needsUpdate = true;
+    this.chave = null;
   }
   /* Dimensões do layout (ao longo da leitura × atravessado) */
   get L() { return this.vertical ? this.h : this.w; }
@@ -55,11 +61,25 @@ export class Gravura {
 
   /* Texto em até duas linhas, centralizado, com revelação da esquerda para a direita. Retorna a frente do laser em uv. */
   texto(linhas, fonte = 'manuscrita', progresso = 1, { cor = '#fff', margem = 0.1, tamanho = 0.42, subir = 0, escala2 = 0.55 } = {}) {
+    const ls = linhas.map((s) => String(s || '').trim()).filter(Boolean);
+    const chave = 't|' + ls.join('\n') + '|' + fonte + '|' + cor + '|' + margem + '|' + tamanho + '|' + subir + '|' + escala2;
+    if (chave !== this.chave) this._desenharTexto(ls, fonte, { cor, margem, tamanho, subir, escala2 }, chave);
+    if (!this.layoutTexto) return null;
+    const { xmin, xmax, ativa } = this.layoutTexto;
+    const corte = xmin + (xmax - xmin) * Math.min(1, Math.max(0, progresso));
+    const L = this.L;
+    // completo: revela tudo (inclusive serifas que passam do retângulo medido)
+    this._revelar(progresso >= 1 ? 1 : corte / L, this.vertical ? 1 : 0);
+    const linhaAtiva = this.layoutTexto.desenhos.length > 1 && progresso > 0.5 ? this.layoutTexto.desenhos[1] : ativa;
+    return this.uv(corte, linhaAtiva.y - linhaAtiva.px * 0.3);
+  }
+  _desenharTexto(ls, fonte, { cor, margem, tamanho, subir, escala2 }, chave) {
     const g = this.ctx;
     const L = this.L, A = this.A;
-    const ls = linhas.map((s) => String(s || '').trim()).filter(Boolean);
     this.limpar();
-    if (!ls.length) return null;
+    this.chave = chave;
+    this.layoutTexto = null;
+    if (!ls.length) return;
     this._layout(g);
     const larguraMax = L * (1 - margem * 2);
     const base = A * tamanho * (ESCALA_FONTE[fonte] || 1) * (ls.length > 1 ? 0.78 : 1);
@@ -82,48 +102,53 @@ export class Gravura {
       y += tamanhos[i] * (i ? 1.05 : 1.1);
       return { l, x, y: yy, px: tamanhos[i] };
     });
-    const corte = xmin + (xmax - xmin) * progresso;
-    g.save();
-    g.beginPath(); g.rect(0, 0, corte, A); g.clip();
     g.fillStyle = this.modo === 'mascara' ? '#fff' : cor;
     g.textBaseline = 'alphabetic';
     desenhos.forEach((d) => { g.font = FONTES[fonte](d.px); g.fillText(d.l, d.x, d.y); });
-    g.restore();
     this.textura.needsUpdate = true;
-    const linhaAtiva = desenhos.length > 1 && progresso > 0.5 ? desenhos[1] : desenhos[0];
-    return this.uv(corte, linhaAtiva.y - linhaAtiva.px * 0.3);
+    this.layoutTexto = { xmin, xmax, desenhos, ativa: desenhos[0] };
   }
 
   /* Foto: 'pontilhado' (laser) varre de cima para baixo; 'cor' aparece com uma onda morna. */
   foto(fonteCanvas, progresso = 1, { texto = null, fonte = 'classica', corTexto = '#1408B8', area = 0.72 } = {}) {
-    const g = this.ctx;
-    this.limpar();
-    if (!fonteCanvas) return null;
-    this._layout(g);
+    if (!fonteCanvas) { this.limpar(); return null; }
     const L = this.L, A = this.A;
     const temTexto = texto && texto.some((s) => String(s || '').trim());
     const alturaFoto = A * (temTexto ? area : 0.86);
     const s = Math.min(L * 0.86 / fonteCanvas.width, alturaFoto / fonteCanvas.height);
     const dw = fonteCanvas.width * s, dh = fonteCanvas.height * s;
     const x = (L - dw) / 2, y = temTexto ? A * 0.04 : (A - dh) / 2;
-    g.save();
+    if (!this._ids) this._ids = new WeakMap();
+    if (!this._ids.has(fonteCanvas)) this._ids.set(fonteCanvas, Math.random().toString(36).slice(2));
+    const chave = 'f|' + this._ids.get(fonteCanvas) + '|' + (texto || []).join('\n') + '|' + fonte + '|' + corTexto + '|' + area;
+    if (chave !== this.chave) this._desenharFoto(fonteCanvas, { x, y, dw, dh, temTexto, texto, fonte, corTexto }, chave);
+    const k = Math.min(1, Math.max(0, progresso));
     if (this.modo === 'mascara') {
-      const ate = y + dh * progresso;
-      g.beginPath(); g.rect(0, 0, L, ate); g.clip();
-      g.imageSmoothingEnabled = false;
-      g.drawImage(fonteCanvas, x, y, dw, dh);
-    } else {
-      const corte = x + dw * progresso;
-      g.beginPath(); g.rect(0, 0, corte, A); g.clip();
-      g.drawImage(fonteCanvas, x, y, dw, dh);
+      const ate = y + dh * k;
+      // pontilhado: varre de cima para baixo no eixo da arte
+      this._revelar(k >= 1 ? 1 : ate / A, this.vertical ? 0 : 2);
+      return this.uv(x + dw * (0.5 + 0.48 * Math.sin(performance.now() * 0.045)), ate);
     }
+    const corte = temTexto ? L * k : x + dw * k;
+    this._revelar(k >= 1 ? 1 : corte / L, this.vertical ? 1 : 0);
+    return this.uv(x + dw * k, A / 2);
+  }
+  _desenharFoto(fonteCanvas, { x, y, dw, dh, temTexto, texto, fonte, corTexto }, chave) {
+    const g = this.ctx;
+    const L = this.L;
+    this.limpar();
+    this.chave = chave;
+    this._layout(g);
+    g.save();
+    if (this.modo === 'mascara') g.imageSmoothingEnabled = false;
+    g.drawImage(fonteCanvas, x, y, dw, dh);
     g.restore();
     if (temTexto) {
+      const A = this.A;
       const linhas = texto.map((t) => String(t || '').trim()).filter(Boolean);
       const px0 = A * 0.12;
       let yy = y + dh + px0 * 1.1;
       g.save();
-      if (this.modo === 'cor') { const corte = L * progresso; g.beginPath(); g.rect(0, 0, corte, A); g.clip(); }
       g.fillStyle = this.modo === 'mascara' ? '#fff' : corTexto;
       linhas.forEach((l, i) => {
         let px = i ? px0 * 0.6 : px0;
@@ -136,11 +161,6 @@ export class Gravura {
       g.restore();
     }
     this.textura.needsUpdate = true;
-    if (this.modo === 'mascara') {
-      const linhaY = y + dh * progresso;
-      return this.uv(x + dw * (0.5 + 0.48 * Math.sin(performance.now() * 0.045)), linhaY);
-    }
-    return this.uv(x + dw * progresso, A / 2);
   }
 }
 
@@ -196,8 +216,9 @@ export function prepararCor(img, max = 900) {
 
 /* Feixe do laser: núcleo, halo, ponto quente, luz e faíscas */
 export function criarLaser({ faiscas = 70 } = {}) {
+  // O grupo fica sempre visível: só o feixe, o ponto e as faíscas aparecem e somem.
+  // Esconder o grupo tiraria a PointLight da conta de luzes e recompilaria todos os materiais no meio da animação.
   const grupo = new THREE.Group();
-  grupo.visible = false;
   const nucleoGeo = new THREE.CylinderGeometry(0.0045, 0.0045, 1, 6, 1, true);
   nucleoGeo.translate(0, -0.5, 0);
   const haloGeo = new THREE.CylinderGeometry(0.024, 0.012, 1, 12, 1, true);
@@ -216,6 +237,7 @@ export function criarLaser({ faiscas = 70 } = {}) {
   const pts = new THREE.Points(geo, new THREE.PointsMaterial({ size: 0.028, map: texturaBrilho(), color: 0xffc27a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
   pts.frustumCulled = false;
   grupo.add(feixe, ponto, luz, pts);
+  feixe.visible = false; ponto.visible = false; pts.visible = false;
 
   const _dir = new THREE.Vector3();
   const _baixo = new THREE.Vector3(0, -1, 0);
@@ -239,7 +261,7 @@ export function criarLaser({ faiscas = 70 } = {}) {
     },
     ligar(on) {
       ativo = on;
-      if (on) grupo.visible = true;
+      if (on) pts.visible = true;
     },
     /* Retorna true enquanto houver algo para desenhar */
     atualizar(dt) {
@@ -272,7 +294,7 @@ export function criarLaser({ faiscas = 70 } = {}) {
         pos[i * 3] += vel[i * 3] * s; pos[i * 3 + 1] += vel[i * 3 + 1] * s; pos[i * 3 + 2] += vel[i * 3 + 2] * s;
       }
       geo.attributes.position.needsUpdate = true;
-      if (!ativo && !vivos && luz.intensity < 0.02) { grupo.visible = false; return false; }
+      if (!ativo && !vivos && luz.intensity < 0.02) { luz.intensity = 0; pts.visible = false; return false; }
       return true;
     }
   };

@@ -2,7 +2,8 @@
 import * as THREE from 'three';
 
 export const toque = matchMedia('(hover: none), (pointer: coarse)').matches;
-export const DPR = Math.min(window.devicePixelRatio || 1, toque ? 1.25 : 1.5);
+// Nitidez: resolução real da tela até 2x, nunca abaixo de 1 (o 3D pixelado do celular vinha daqui)
+export const DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
 export const ligado = () => document.documentElement.classList.contains('motion-on');
 export const limitar = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 export const trecho = (p, a, b) => limitar((p - a) / (b - a));
@@ -81,6 +82,15 @@ export function criarPalco(host, opcoes = {}) {
   canvas.setAttribute('aria-hidden', 'true');
   host.prepend(canvas);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance', preserveDrawingBuffer: !!opcoes.preservar });
+  // GPU por software (sem aceleração): o 3D ao vivo travaria; quem chama decide ficar no pôster
+  let softwareGPU = false;
+  try {
+    const gl = renderer.getContext();
+    const info = gl.getExtension('WEBGL_debug_renderer_info');
+    const nome = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : '';
+    softwareGPU = /swiftshader|llvmpipe|software|basic render/i.test(nome);
+  } catch (e) { /* sem informação: segue */ }
+  if (softwareGPU && opcoes.recusarSoftware) { renderer.dispose(); canvas.remove(); return { softwareGPU, destruir() {} }; }
   renderer.setPixelRatio(DPR);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -97,7 +107,7 @@ export function criarPalco(host, opcoes = {}) {
 
   const camera = new THREE.PerspectiveCamera(fov, 1, 0.1, 60);
   const palco = {
-    renderer, cena, camera, canvas, host,
+    renderer, cena, camera, canvas, host, softwareGPU,
     w: 1, h: 1, visivel: false, sujo: true, destruido: false,
     centro: { x: 0.5, y: 0.5 },
     tick: null, aoRedimensionar: null,
@@ -138,13 +148,12 @@ export function criarPalco(host, opcoes = {}) {
     if (mudou || palco.sujo) {
       renderer.render(cena, camera);
       palco.sujo = false;
-      // Qualidade adaptativa: se os quadros ficam lentos (GPU fraca), baixa a resolução do 3D.
-      if (mudou && !window.QB_QUALIDADE_FIXA) {
+      // GPU lenta: desce uma vez só, de 2x para 1,5x (nunca fica borrado)
+      if (mudou && !window.QB_QUALIDADE_FIXA && dprAtual > 1.5) {
         somaQuadros += dt; nQuadros++;
-        if (nQuadros >= 24) {
-          const media = somaQuadros / nQuadros;
-          if (media > 42 && dprAtual > 0.6) {
-            dprAtual = Math.max(0.6, dprAtual - 0.25);
+        if (nQuadros >= 30) {
+          if (somaQuadros / nQuadros > 40) {
+            dprAtual = 1.5;
             renderer.setPixelRatio(dprAtual);
             renderer.setSize(palco.w, palco.h, false);
           }

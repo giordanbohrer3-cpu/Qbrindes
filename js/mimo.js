@@ -146,7 +146,7 @@
       const animar = d.movimento && ligado() && visivel;
       const festa = animar && (d.gesto || !jaFesta);
       $('[data-mimo-selo]', mimo).textContent = jaFesta && !d.gesto ? 'Seu presente continua aqui' : 'Presente de boas-vindas';
-      mimo.hidden = false; aberto = true;
+      mimo.hidden = false; mimo.classList.remove('mimo--pre'); aberto = true;
       hero.dataset.mimo = animar ? 'chegando' : 'parado';
       medir();
       if (!animar) { pousou(d, false); return; }
@@ -232,7 +232,7 @@
       if (!aberto) return;
       limpar();
       const dentro = mimo.contains(document.activeElement);
-      const fim = () => { mimo.hidden = true; aberto = false; virar(false, true); delete hero.dataset.mimo; mimo.classList.remove('mimo--inclinado'); };
+      const fim = () => { mimo.hidden = true; aberto = false; virar(false, true); delete hero.dataset.mimo; mimo.classList.remove('mimo--inclinado', 'mimo--pre'); };
       if (rapido || !ligado()) fim();
       else {
         const a = cena.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(10px) scale(.985)' }], { duration: 260, easing: 'cubic-bezier(.4,0,1,1)', fill: 'forwards' });
@@ -306,6 +306,8 @@
       else if (d.fase === 'fechar') fechar(false);
       else if (d.fase === 'tocando') {
         if (aberto) fechar(true);
+        // Monta o cartão invisível agora: estilo e layout saem do quadro da revelação (~4,7 s depois)
+        mimo.classList.add('mimo--pre'); mimo.hidden = false; medir();
         // A manuscrita precisa estar pronta quando o cartão sair (~5 s depois)
         if (document.fonts && document.fonts.load) document.fonts.load('400 32px "Great Vibes"').catch(() => {});
       }

@@ -104,7 +104,7 @@
     .motion-on .como__anel { position: relative; display: block; width: min(84vw, 340px); height: 330px; transform-style: preserve-3d; animation: anel-cel linear both; animation-timeline: --como; animation-range: contain 0% contain 100%; }
     .motion-on .passo-card { position: absolute; inset: 0; padding: 34px 28px; transform: rotateY(calc(var(--i) * 90deg)) translateZ(calc(min(84vw, 340px) / 2)); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
   }
-  .motion-on .como .passo-card:not(.ativo) { opacity: .45; }
+  .motion-on .como .passo-card:not(.ativo) { opacity: .7; }
   .motion-on .como__pontos { display: flex; justify-content: center; gap: 10px; }
   .motion-on .como__pontos li { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; font: 600 12px/1 var(--f-texto); color: #B9B4D9; border: 1px solid rgba(255, 255, 255, .16); transition: background-color var(--t2) var(--ease), color var(--t2) var(--ease), border-color var(--t2) var(--ease); }
   .motion-on .como__pontos li.ativo { background: var(--ouro); border-color: var(--ouro); color: var(--tinta); }

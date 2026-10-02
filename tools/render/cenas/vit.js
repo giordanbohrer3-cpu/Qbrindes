@@ -34,7 +34,7 @@ export async function criar({ renderer, W, H, q }) {
   mundo.add(suporte);
 
   const camera = new THREE.PerspectiveCamera(30, W / H, 0.1, 80);
-  const ENQ = { copo: [6.9, 1.12], caneta: [6.2, 1.15], chaveiro: [7.1, 1.66], garrafa: [7.4, 1.38], taca: [6.7, 1.02] }[produto] || [7, 1.1];
+  const ENQ = { copo: [7.5, 1.3], caneta: [6.2, 1.15], chaveiro: [7.1, 1.66], garrafa: [7.4, 1.38], taca: [6.7, 1.02] }[produto] || [7, 1.1];
   camera.position.set(0, ENQ[1] + 0.62, ENQ[0]);
   camera.lookAt(0, ENQ[1], 0);
 
@@ -85,7 +85,7 @@ export async function criar({ renderer, W, H, q }) {
     quadroProduto = (t, dt) => {
       const ent = mola(t, 0, 0.95), sai = suave(trecho(t, 6.3, 7.0));
       const abreY = mola(t, 2.0, 0.6) * (1 - mola(t, 3.9, 0.6));
-      suporte.position.set(lerp(0, -4.4, sai), lerp(3.8, 0, ent) + abreY * 0.52, 0);
+      suporte.position.set(lerp(0, -4.6, sai), lerp(4.2, 0, ent) + abreY * 0.25, 0);
       giro.rotation.y = (1 - ent) * 2.2 + suave(trecho(t, 0.9, 2.0)) * Math.PI * 2 + Math.sin(t * 0.8) * 0.05 - sai * 0.8 - 0.15;
       const abre = mola(t, 2.0, 0.6) * (1 - mola(t, 3.9, 0.6));
       P.tampa.position.y = abre * 0.62; P.tampa.rotation.z = abre * 0.1;
